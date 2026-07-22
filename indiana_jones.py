@@ -68,8 +68,150 @@ class RepulsionLogitsProcessor:
         return logits
 
 
+class CohomologyEngine:
+    """Persistent Cohomology and Sheaf Obstruction Evaluator over Latent Embeddings."""
+    def __init__(self, max_points=25, eps_percentile=50):
+        self.max_points = max_points
+        self.eps_percentile = eps_percentile
+
+    def compute_simplicial_cohomology(self, history_vecs):
+        """
+        Builds a Vietoris-Rips simplicial complex over history_vecs,
+        calculates boundary matrices d0, d1, d2 over R, and derives Betti numbers (b0, b1, b2),
+        cohomological dimension (cd), and topological cycle/void guidance.
+        """
+        if not history_vecs or len(history_vecs) < 3:
+            return {
+                "b0": 1, "b1": 0, "b2": 0,
+                "cohomological_dim": 1.0,
+                "sheaf_obstruction": 0.0,
+                "cohomological_novelty": 0.5,
+                "cycle_direction": None,
+                "void_centroid": None
+            }
+
+        arr = np.array(history_vecs[-self.max_points:])
+        N = len(arr)
+
+        # Pairwise distance matrix
+        dists = np.zeros((N, N))
+        for i in range(N):
+            for j in range(i + 1, N):
+                d = np.linalg.norm(arr[i] - arr[j])
+                dists[i, j] = dists[j, i] = d
+
+        non_zero_dists = dists[dists > 1e-6]
+        if len(non_zero_dists) == 0:
+            epsilon = 0.5
+        else:
+            epsilon = float(np.percentile(non_zero_dists, self.eps_percentile))
+
+        # 0-simplices C0: nodes 0..N-1
+        c0 = list(range(N))
+
+        # 1-simplices C1: pairs (i, j) with dist <= epsilon
+        c1 = []
+        for i in range(N):
+            for j in range(i + 1, N):
+                if dists[i, j] <= epsilon:
+                    c1.append((i, j))
+
+        # 2-simplices C2: triples (i, j, k) with all dists <= epsilon
+        c2 = []
+        for i in range(N):
+            for j in range(i + 1, N):
+                if dists[i, j] <= epsilon:
+                    for k in range(j + 1, N):
+                        if dists[i, k] <= epsilon and dists[j, k] <= epsilon:
+                            c2.append((i, j, k))
+
+        # Boundary operator partial_1: C1 -> C0
+        num_c0 = len(c0)
+        num_c1 = len(c1)
+        num_c2 = len(c2)
+
+        if num_c1 > 0:
+            B1 = np.zeros((num_c0, num_c1))
+            for idx, (i, j) in enumerate(c1):
+                B1[j, idx] = 1.0
+                B1[i, idx] = -1.0
+            rank_B1 = int(np.linalg.matrix_rank(B1))
+        else:
+            rank_B1 = 0
+
+        if num_c2 > 0:
+            B2 = np.zeros((num_c1, num_c2))
+            c1_index = {edge: idx for idx, edge in enumerate(c1)}
+            for idx, (i, j, k) in enumerate(c2):
+                if (j, k) in c1_index:
+                    B2[c1_index[(j, k)], idx] += 1.0
+                if (i, k) in c1_index:
+                    B2[c1_index[(i, k)], idx] -= 1.0
+                if (i, j) in c1_index:
+                    B2[c1_index[(i, j)], idx] += 1.0
+            rank_B2 = int(np.linalg.matrix_rank(B2))
+        else:
+            rank_B2 = 0
+
+        # Betti numbers
+        b0 = max(1, num_c0 - rank_B1)
+        b1 = max(0, num_c1 - rank_B2 - rank_B1)
+        b2 = max(0, num_c2 - rank_B2) if num_c2 > 0 else 0
+
+        # Cohomological dimension
+        cd = float(b0 + 1.5 * b1 + 2.0 * b2)
+
+        # Sheaf Obstruction metric over last vectors (coboundary sections)
+        if N >= 3:
+            sec_diffs = arr[1:] - arr[:-1]
+            sec_coboundary = sec_diffs[1:] - sec_diffs[:-1]
+            norm_sec = np.linalg.norm(sec_diffs) + 1e-6
+            sheaf_obstruction = float(np.linalg.norm(sec_coboundary) / norm_sec)
+        else:
+            sheaf_obstruction = 0.0
+
+        # Cycle direction if b1 > 0
+        cycle_direction = None
+        if b1 > 0 and num_c1 > 0:
+            cycle_edge_vecs = []
+            for (i, j) in c1[:5]:
+                vec = arr[j] - arr[i]
+                norm = np.linalg.norm(vec)
+                if norm > 1e-6:
+                    cycle_edge_vecs.append(vec / norm)
+            if cycle_edge_vecs:
+                mean_cycle = np.mean(cycle_edge_vecs, axis=0)
+                norm = np.linalg.norm(mean_cycle)
+                if norm > 1e-6:
+                    cycle_direction = mean_cycle / norm
+
+        # Void centroid if b2 > 0
+        void_centroid = None
+        if b2 > 0 and num_c2 > 0:
+            triangle_centroids = []
+            for (i, j, k) in c2[:5]:
+                centroid = (arr[i] + arr[j] + arr[k]) / 3.0
+                triangle_centroids.append(centroid)
+            if triangle_centroids:
+                void_centroid = np.mean(triangle_centroids, axis=0)
+
+        # Cohomological Novelty Score: rewards structural complexity (b1, b2, high cd, sheaf obstruction)
+        cohomological_novelty = min(1.0, float(0.25 * (b0 / max(1, N)) + 0.35 * min(1.0, b1 / 2.0) + 0.35 * min(1.0, b2 / 2.0) + 0.30 * min(1.0, sheaf_obstruction)))
+
+        return {
+            "b0": b0,
+            "b1": b1,
+            "b2": b2,
+            "cohomological_dim": cd,
+            "sheaf_obstruction": sheaf_obstruction,
+            "cohomological_novelty": cohomological_novelty,
+            "cycle_direction": cycle_direction,
+            "void_centroid": void_centroid
+        }
+
+
 class NoveltyEngine:
-    """Kernel Density Estimation (KDE) and Multi-Scale Entropy Novelty Evaluator."""
+    """Kernel Density Estimation (KDE), Lexical Entropy & Cohomological Novelty Evaluator."""
     def __init__(self, bandwidth=0.35, decay_factor=0.97):
         self.bandwidth = bandwidth
         self.decay_factor = decay_factor
@@ -113,7 +255,7 @@ class NoveltyEngine:
         norm_surprise = min(1.0, max(0.0, (avg_surprise - 3.0) / 8.0))
         return float(norm_surprise)
 
-    def evaluate_novelty(self, text, candidate_vec, history_vecs, history_texts):
+    def evaluate_novelty(self, text, candidate_vec, history_vecs, history_texts, cohom_novelty=0.5):
         if not history_vecs:
             return 1.0, candidate_vec
             
@@ -121,13 +263,13 @@ class NoveltyEngine:
         kde_novelty = max(0.0, 1.0 - kde_density)
         lexical_novelty = self.compute_lexical_entropy(text, history_texts)
         
-        # Composite Novelty Score
-        composite_novelty = (0.7 * kde_novelty) + (0.3 * lexical_novelty)
+        # Composite Novelty Score fusing KDE, Lexical Entropy, and Cohomological Dimension
+        composite_novelty = (0.50 * kde_novelty) + (0.20 * lexical_novelty) + (0.30 * cohom_novelty)
         return float(composite_novelty), candidate_vec
 
 
 class VectorSteering:
-    """Subspace Orthogonal Projection and Vector Momentum Steering."""
+    """Subspace Orthogonal Projection, Vector Momentum & Topological Steering."""
     @staticmethod
     def compute_pca_subspace(history_vecs, k=2):
         if len(history_vecs) < k + 1:
@@ -148,6 +290,31 @@ class VectorSteering:
         if norm > 1e-6:
             v_ortho /= norm
         return v_ortho
+
+    @staticmethod
+    def topological_steering(candidate_vec, cohom_data, push_weight=0.5):
+        """Pushes candidate vector away from 1-cycle loops and towards 2-void centroids."""
+        if cohom_data is None:
+            return candidate_vec
+        v_steered = candidate_vec.copy()
+        
+        # Loop Repulsion (if 1-cycle present)
+        cycle_dir = cohom_data.get("cycle_direction")
+        if cycle_dir is not None:
+            v_steered -= push_weight * np.dot(v_steered, cycle_dir) * cycle_dir
+            
+        # Void Centroid Pull (if 2-void present)
+        void_cent = cohom_data.get("void_centroid")
+        if void_cent is not None:
+            dir_to_void = void_cent - v_steered
+            norm = np.linalg.norm(dir_to_void)
+            if norm > 1e-6:
+                v_steered += (push_weight * 0.5) * (dir_to_void / norm)
+                
+        norm = np.linalg.norm(v_steered)
+        if norm > 1e-6:
+            v_steered /= norm
+        return v_steered
 
     @staticmethod
     def compute_momentum_vector(gold_vecs, baseline_vec):
@@ -227,6 +394,7 @@ class LatentExplorer:
         
         # 3. Next-Gen Engines
         self.novelty_engine = NoveltyEngine(bandwidth=0.35, decay_factor=0.97)
+        self.cohomology_engine = CohomologyEngine(max_points=25, eps_percentile=50)
         self.steering_engine = VectorSteering()
         self.graph_engine = ExpeditionGraph()
         self.repulsion_processor = RepulsionLogitsProcessor(self.llm, penalty=5.0)
@@ -243,13 +411,17 @@ class LatentExplorer:
         self.model_path = model_path
         self.starting_concept = starting_concept
         self.current_location = starting_concept
-        self.current_temperature = 0.85
+        self.current_temperature = 0.90
         self.low_novelty_streak = 0
-        self.orthogonal_push_weight = 0.70
-        self.gold_threshold = 0.55
+        self.orthogonal_push_weight = 0.90
+        self.gold_threshold = 0.90
         
-        # 12 Specialized Persona Lenses for Cross-Disciplinary Steering
+        # 16 Specialized Persona Lenses for Cross-Disciplinary Steering
         self.personas = [
+            "Sheaf Cohomology & Local-to-Global Obstructions",
+            "Persistent Cohomology & Latent Void Dynamics",
+            "Homological Algebra & Triangulated Categories of Thought",
+            "Spectral Sequences of Conceptual Transformation",
             "Synthetic Epigenetics & Bio-Computing",
             "Topological Fluid Dynamics",
             "Surrealist Cybernetics & Neural Craft",
@@ -415,7 +587,7 @@ Score:"""
             json.dump(data, f, indent=4, ensure_ascii=False)
         print("✅ Journal saved successfully.")
 
-    def start_expedition(self, steps=100, gold_threshold=0.55):
+    def start_expedition(self, steps=100, gold_threshold=0.90):
         self.gold_threshold = gold_threshold
         if DASHBOARD_AVAILABLE:
             GLOBAL_STATE.total_steps = steps
@@ -445,12 +617,16 @@ Score:"""
             raw_response = output["choices"][0]["text"].strip()
             response = self.strip_filler(raw_response)
             
-            # 2. Vector Encoding & Novelty Evaluation (KDE + Lexical Entropy)
+            # 2. Vector Encoding, Persistent Cohomology & Novelty Evaluation
             vec = self.compass.encode([response])[0]
+            
+            cohom_data = self.cohomology_engine.compute_simplicial_cohomology(self.journal_embeddings + [vec])
+            print(f"📐 Cohomological Dim: {cohom_data['cohomological_dim']:.2f} | b0={cohom_data['b0']} | b1(Loops)={cohom_data['b1']} | b2(Voids)={cohom_data['b2']} | Sheaf Obstruction: {cohom_data['sheaf_obstruction']:.3f}")
+
             novelty_score, vec = self.novelty_engine.evaluate_novelty(
-                response, vec, self.journal_embeddings, self.journal_texts
+                response, vec, self.journal_embeddings, self.journal_texts, cohom_novelty=cohom_data["cohomological_novelty"]
             )
-            print(f"📊 Multi-Scale KDE Novelty Score: {novelty_score:.2f} (Target > {gold_threshold})")
+            print(f"📊 Multi-Scale KDE + Cohomological Novelty Score: {novelty_score:.2f} (Target > {gold_threshold})")
             
             # Temperature Adjustment
             if novelty_score < 0.35:
@@ -482,7 +658,7 @@ Score:"""
                     self.gold_embeddings.append(vec)
                     is_gold = True
                 else:
-                    print("🗑️  Fool's Gold: Novel, but lacks coherence.")
+                    print("🗑️ Fool's Gold: Novel, but lacks coherence.")
             else:
                 print("🪨 Conventional terrain. Continuing traversal.")
                 
@@ -499,7 +675,7 @@ Score:"""
             )
 
             # 3. Vector Steering & Next Seed Selection
-            print("🔎 Steering next seed vector...")
+            print("🔎 Steering next seed vector with topological guidance...")
             seed_prompt = self.extract_seed_prompt(response)
             seed_output = self.llm(seed_prompt, max_tokens=15, temperature=0.3)
             raw_next_location = self.validate_seed(seed_output["choices"][0]["text"].strip())
@@ -507,6 +683,12 @@ Score:"""
             leap_triggered = False
             concept_blended = False
             
+            # Topological cycle repulsion and void attraction steering
+            if cohom_data["b1"] > 0:
+                print(f"🌀 1-Cycle Loop detected (b1={cohom_data['b1']}). Applying Topological Loop Repulsion Push.")
+            if cohom_data["b2"] > 0:
+                print(f"🕳️ 2-Void Cavity detected (b2={cohom_data['b2']}). Steering search into Topological Void Centroid.")
+
             # Backtracking / Pareto Frontier Jump / Vector Push
             if self.low_novelty_streak >= 3:
                 print("⚡ QUANTUM VECTOR WARP TRIGGERED! Explorer escaping latent plateau.")
@@ -523,9 +705,10 @@ Score:"""
                 components = VectorSteering.compute_pca_subspace(self.journal_embeddings)
                 raw_seed_vec = self.compass.encode([raw_next_location])[0]
                 ortho_vec = VectorSteering.orthogonal_projection(raw_seed_vec, components)
+                ortho_vec = VectorSteering.topological_steering(ortho_vec, cohom_data, push_weight=0.7)
                 
                 next_location = f"{base_concept} orthogonally shifted through {self.get_current_persona()}"
-                print(f"🌀 Warping along Orthogonal Vector to: '{next_location}'")
+                print(f"🌀 Warping along Topological Cohomological Vector to: '{next_location}'")
             elif novelty_score < 0.48:
                 # Rotate persona lens to inject cross-disciplinary force
                 new_persona = self.rotate_persona()
@@ -548,7 +731,12 @@ Score:"""
                 "response": response,
                 "next_location": next_location,
                 "energy_after_step": self.energy_level - 34,
-                "pca_coord": latest_pca
+                "pca_coord": latest_pca,
+                "cohomological_dim": cohom_data["cohomological_dim"],
+                "b0": cohom_data["b0"],
+                "b1": cohom_data["b1"],
+                "b2": cohom_data["b2"],
+                "sheaf_obstruction": cohom_data["sheaf_obstruction"]
             }
             self.roadtrip_log.append(step_data)
 
@@ -585,4 +773,4 @@ if __name__ == "__main__":
         starting_concept="The relationship between truth and confabulations"
     )
     
-    indy.start_expedition(steps=100, gold_threshold=0.55)
+    indy.start_expedition(steps=100, gold_threshold=0.90)

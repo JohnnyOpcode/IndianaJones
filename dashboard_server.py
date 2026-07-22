@@ -27,6 +27,13 @@ class ExpeditionState:
         self.repulsion_strength = 5.0
         self.current_persona = "Lateral Thinker"
         
+        # Cohomological Dimensions & Persistent Cohomology State
+        self.cohomological_dim = 1.0
+        self.betti_0 = 1
+        self.betti_1 = 0
+        self.betti_2 = 0
+        self.sheaf_obstruction = 0.0
+        
         self.journal_history = []  # List of step dictionaries
         self.gold_vault = []       # List of gold items
         self.frontier_nodes = []   # List of Pareto frontier node summaries
@@ -42,6 +49,12 @@ class ExpeditionState:
             self.temperature = step_data.get("temperature", self.temperature)
             self.energy = step_data.get("energy_after_step", self.energy)
             self.current_persona = step_data.get("persona", self.current_persona)
+            
+            self.cohomological_dim = step_data.get("cohomological_dim", self.cohomological_dim)
+            self.betti_0 = step_data.get("b0", self.betti_0)
+            self.betti_1 = step_data.get("b1", self.betti_1)
+            self.betti_2 = step_data.get("b2", self.betti_2)
+            self.sheaf_obstruction = step_data.get("sheaf_obstruction", self.sheaf_obstruction)
             
             self.journal_history.append(step_data)
             if step_data.get("is_gold"):
@@ -80,6 +93,11 @@ class ExpeditionState:
                 "momentum_weight": self.momentum_weight,
                 "repulsion_strength": self.repulsion_strength,
                 "current_persona": self.current_persona,
+                "cohomological_dim": self.cohomological_dim,
+                "betti_0": self.betti_0,
+                "betti_1": self.betti_1,
+                "betti_2": self.betti_2,
+                "sheaf_obstruction": self.sheaf_obstruction,
                 "gold_count": len(self.gold_vault),
                 "journal_count": len(self.journal_history),
                 "journal_history": self.journal_history[-15:], # Last 15 for payload efficiency

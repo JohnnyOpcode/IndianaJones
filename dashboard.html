@@ -147,8 +147,14 @@
 
         .metrics-bar {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 1400px) {
+            .metrics-bar {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
         .metric-tile {
@@ -364,6 +370,18 @@
                     <span class="metric-val gold" id="metricGold">0</span>
                 </div>
                 <div class="metric-tile">
+                    <span class="metric-label">Cohomological Dim (cd)</span>
+                    <span class="metric-val cyan" id="metricCohomDim">1.00</span>
+                </div>
+                <div class="metric-tile">
+                    <span class="metric-label">Betti 1-Loops / 2-Voids</span>
+                    <span class="metric-val purple" id="metricBetti">b₁:0 | b₂:0</span>
+                </div>
+                <div class="metric-tile">
+                    <span class="metric-label">Sheaf Obstruction (Ω)</span>
+                    <span class="metric-val" style="color: #FF00E5;" id="metricSheaf">0.000</span>
+                </div>
+                <div class="metric-tile">
                     <span class="metric-label">Active Temperature</span>
                     <span class="metric-val purple" id="metricTemp">0.85</span>
                 </div>
@@ -500,6 +518,9 @@
 
             document.getElementById('metricStep').innerText = `${stateData.current_step}/${stateData.total_steps}`;
             document.getElementById('metricGold').innerText = stateData.gold_count;
+            document.getElementById('metricCohomDim').innerText = Number(stateData.cohomological_dim || 1.0).toFixed(2);
+            document.getElementById('metricBetti').innerText = `b₁:${stateData.betti_1 || 0} | b₂:${stateData.betti_2 || 0}`;
+            document.getElementById('metricSheaf').innerText = Number(stateData.sheaf_obstruction || 0.0).toFixed(3);
             document.getElementById('metricTemp').innerText = Number(stateData.temperature).toFixed(2);
             document.getElementById('metricEnergy').innerText = `${stateData.energy}%`;
             document.getElementById('activeLocation').innerText = stateData.current_location;
@@ -624,6 +645,18 @@
                 else telemetryCtx.lineTo(cx, cy);
             });
             telemetryCtx.stroke();
+
+            // Draw Cohomological Dim Line (Magenta #FF00E5 - normalized 0-1 via cd/5.0)
+            telemetryCtx.beginPath();
+            telemetryCtx.strokeStyle = "#FF00E5";
+            telemetryCtx.lineWidth = 1.8 * window.devicePixelRatio;
+            history.forEach((item, idx) => {
+                const normCd = Math.min(1.0, (item.cohomological_dim || 1.0) / 5.0);
+                const cx = mapX(idx), cy = mapY(normCd);
+                if (idx === 0) telemetryCtx.moveTo(cx, cy);
+                else telemetryCtx.lineTo(cx, cy);
+            });
+            telemetryCtx.stroke();
         }
 
         function renderJournalFeed() {
@@ -640,6 +673,9 @@
                     <div class="entry-text">${item.response}</div>
                     <div class="entry-tags">
                         ${item.is_gold ? '<span class="tag gold-tag">🌟 GOLD VEIN</span>' : ''}
+                        ${item.cohomological_dim ? `<span class="tag cyan-tag">cd: ${Number(item.cohomological_dim).toFixed(1)}</span>` : ''}
+                        ${item.b1 > 0 ? `<span class="tag purple-tag">🌀 1-CYCLE LOOP</span>` : ''}
+                        ${item.b2 > 0 ? `<span class="tag gold-tag">🕳️ 2-VOID CAVITY</span>` : ''}
                         ${item.concept_blended ? '<span class="tag purple-tag">🧬 BLENDED</span>' : ''}
                         ${item.leap_triggered ? '<span class="tag cyan-tag">⚡ QUANTUM WARP</span>' : ''}
                         <span class="tag">Next: ${item.next_location}</span>
