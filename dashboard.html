@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indiana Jones: Latent Space Expedition Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #07090E;
+            --card-bg: rgba(16, 22, 36, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-gold: #FFC700;
+            --accent-gold-glow: rgba(255, 199, 0, 0.35);
+            --accent-cyan: #00F0FF;
+            --accent-cyan-glow: rgba(0, 240, 255, 0.25);
+            --accent-purple: #9D00FF;
+            --accent-red: #FF3366;
+            --text-main: #F0F4F8;
+            --text-muted: #8E9BAE;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.04) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 199, 0, 0.04) 0%, transparent 40%);
+        }
+
+        header {
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(7, 9, 14, 0.85);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 10px var(--accent-gold-glow));
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FFFFFF 0%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .expedition-status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-cyan);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1.0; transform: scale(1.2); }
+            100% { opacity: 0.4; transform: scale(0.9); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .metric-tile {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-val.gold { color: var(--accent-gold); text-shadow: 0 0 12px var(--accent-gold-glow); }
+        .metric-val.cyan { color: var(--accent-cyan); text-shadow: 0 0 12px var(--accent-cyan-glow); }
+        .metric-val.purple { color: var(--accent-purple); }
+
+        #pcaCanvas {
+            width: 100%;
+            height: 380px;
+            background: rgba(4, 6, 12, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 200px;
+            position: relative;
+        }
+
+        canvas.telemetryCanvas {
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 6, 12, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .journal-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .journal-feed::-webkit-scrollbar {
+            width: 6px;
+        }
+        .journal-feed::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .feed-entry {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .feed-entry:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            transform: translateX(4px);
+        }
+
+        .feed-entry.gold-entry {
+            border: 1px solid var(--accent-gold);
+            background: linear-gradient(135deg, rgba(255, 199, 0, 0.08) 0%, rgba(16, 22, 36, 0.8) 100%);
+            box-shadow: 0 0 15px var(--accent-gold-glow);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .entry-text {
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: #DCE3ED;
+        }
+
+        .entry-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+        }
+
+        .tag.gold-tag { background: var(--accent-gold); color: #000; font-weight: 700; }
+        .tag.cyan-tag { background: rgba(0, 240, 255, 0.15); color: var(--accent-cyan); }
+        .tag.purple-tag { background: rgba(157, 0, 255, 0.2); color: #D699FF; }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, #0088FF 100%);
+            color: #000;
+            font-weight: 700;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-cyan-glow);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #FF8800 100%);
+        }
+
+        .btn-gold:hover {
+            box-shadow: 0 6px 20px var(--accent-gold-glow);
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-cyan);
+        }
+
+        @media (max-width: 1100px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <span class="brand-icon">🗺️</span>
+            <div>
+                <div class="brand-title">INDIANA JONES</div>
+                <div class="brand-subtitle">Latent Space Vector Explorer v2.0</div>
+            </div>
+        </div>
+        <div class="expedition-status-pill">
+            <div class="status-dot"></div>
+            <span id="statusText">LIVE EXPEDITION ACTIVE</span>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <!-- Main Column -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Top Telemetry Cards -->
+            <div class="metrics-bar">
+                <div class="metric-tile">
+                    <span class="metric-label">Current Step</span>
+                    <span class="metric-val cyan" id="metricStep">0/100</span>
+                </div>
+                <div class="metric-tile">
+                    <span class="metric-label">Gold Veins</span>
+                    <span class="metric-val gold" id="metricGold">0</span>
+                </div>
+                <div class="metric-tile">
+                    <span class="metric-label">Active Temperature</span>
+                    <span class="metric-val purple" id="metricTemp">0.85</span>
+                </div>
+                <div class="metric-tile">
+                    <span class="metric-label">Explorer Energy</span>
+                    <span class="metric-val" style="color: #00FF88;" id="metricEnergy">100%</span>
+                </div>
+            </div>
+
+            <!-- 2D PCA Latent Space Visualization -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🌐 High-Dimensional Latent Trajectory (2D PCA Vector Push)</div>
+                    <span class="tag cyan-tag" id="activePersona">Lens: Synthetic Epigenetics</span>
+                </div>
+                <canvas id="pcaCanvas"></canvas>
+            </div>
+
+            <!-- Realtime Telemetry Charts -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📈 Real-Time Telemetry (KDE Novelty vs. Coherence)</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="telemetryCanvas" class="telemetryCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Journal Discoveries -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📜 Real-Time Expedition Stream</div>
+                </div>
+                <div class="journal-feed" id="journalFeed">
+                    <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem;">
+                        Waiting for expedition step telemetry...
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar / Control Panel -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📍 Active Concept Coordinates</div>
+                </div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--accent-cyan); word-break: break-word; background: rgba(0,240,255,0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(0,240,255,0.2);" id="activeLocation">
+                    Initializing Dropping Point...
+                </div>
+            </div>
+
+            <!-- Steering & Vector Controls -->
+            <div class="card control-panel">
+                <div class="card-header">
+                    <div class="card-title">⚡ Steering Vector Controls</div>
+                </div>
+                
+                <button class="btn btn-gold" id="btnWarp">
+                    <span>🌀 Force Quantum Vector Warp</span>
+                </button>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Orthogonal Push Weight</span>
+                        <span id="pushVal">0.70</span>
+                    </div>
+                    <input type="range" id="pushSlider" min="0" max="1" step="0.05" value="0.70">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Logit Repulsion Penalty</span>
+                        <span id="repulsionVal">5.0</span>
+                    </div>
+                    <input type="range" id="repulsionSlider" min="0" max="15" step="0.5" value="5.0">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Gold Threshold</span>
+                        <span id="goldThreshVal">0.55</span>
+                    </div>
+                    <input type="range" id="goldThreshSlider" min="0.3" max="0.8" step="0.02" value="0.55">
+                </div>
+            </div>
+
+            <!-- Gold Vault Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">💎 Gold Vault Highlights</div>
+                </div>
+                <div id="goldVaultList" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 350px; overflow-y: auto;">
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">No gold veins discovered yet on this expedition.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const pcaCanvas = document.getElementById('pcaCanvas');
+        const pcaCtx = pcaCanvas.getContext('2d');
+        const telemetryCanvas = document.getElementById('telemetryCanvas');
+        const telemetryCtx = telemetryCanvas.getContext('2d');
+
+        function resizeCanvases() {
+            pcaCanvas.width = pcaCanvas.offsetWidth * window.devicePixelRatio;
+            pcaCanvas.height = pcaCanvas.offsetHeight * window.devicePixelRatio;
+            telemetryCanvas.width = telemetryCanvas.offsetWidth * window.devicePixelRatio;
+            telemetryCanvas.height = telemetryCanvas.offsetHeight * window.devicePixelRatio;
+        }
+        window.addEventListener('resize', resizeCanvases);
+        resizeCanvases();
+
+        let stateData = null;
+
+        async function fetchState() {
+            try {
+                const resp = await fetch('/api/state');
+                stateData = await resp.json();
+                renderUI();
+            } catch (e) {
+                console.error("Error fetching state:", e);
+            }
+        }
+        setInterval(fetchState, 1000);
+        fetchState();
+
+        function renderUI() {
+            if (!stateData) return;
+
+            document.getElementById('metricStep').innerText = `${stateData.current_step}/${stateData.total_steps}`;
+            document.getElementById('metricGold').innerText = stateData.gold_count;
+            document.getElementById('metricTemp').innerText = Number(stateData.temperature).toFixed(2);
+            document.getElementById('metricEnergy').innerText = `${stateData.energy}%`;
+            document.getElementById('activeLocation').innerText = stateData.current_location;
+            document.getElementById('activePersona').innerText = `Lens: ${stateData.current_persona || 'Lateral Thinker'}`;
+
+            renderPCAChart();
+            renderTelemetryChart();
+            renderJournalFeed();
+            renderGoldVault();
+        }
+
+        function renderPCAChart() {
+            const w = pcaCanvas.width;
+            const h = pcaCanvas.height;
+            pcaCtx.clearRect(0, 0, w, h);
+
+            // Draw grid
+            pcaCtx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+            pcaCtx.lineWidth = 1;
+            for (let x = 0; x < w; x += 40) {
+                pcaCtx.beginPath(); pcaCtx.moveTo(x, 0); pcaCtx.lineTo(x, h); pcaCtx.stroke();
+            }
+            for (let y = 0; y < h; y += 40) {
+                pcaCtx.beginPath(); pcaCtx.moveTo(0, y); pcaCtx.lineTo(w, y); pcaCtx.stroke();
+            }
+
+            const coords = stateData.pca_coords || [];
+            if (coords.length === 0) return;
+
+            // Map coords to canvas space
+            const margin = 50;
+            let minX = -1, maxX = 1, minY = -1, maxY = 1;
+            coords.forEach(c => {
+                if (c.x < minX) minX = c.x;
+                if (c.x > maxX) maxX = c.x;
+                if (c.y < minY) minY = c.y;
+                if (c.y > maxY) maxY = c.y;
+            });
+
+            function mapX(val) { return margin + (val - minX) / (maxX - minX || 1) * (w - 2 * margin); }
+            function mapY(val) { return margin + (val - minY) / (maxY - minY || 1) * (h - 2 * margin); }
+
+            // Draw trajectory path
+            pcaCtx.beginPath();
+            pcaCtx.strokeStyle = "rgba(0, 240, 255, 0.35)";
+            pcaCtx.lineWidth = 2 * window.devicePixelRatio;
+            coords.forEach((c, idx) => {
+                const cx = mapX(c.x), cy = mapY(c.y);
+                if (idx === 0) pcaCtx.moveTo(cx, cy);
+                else pcaCtx.lineTo(cx, cy);
+            });
+            pcaCtx.stroke();
+
+            // Draw points
+            coords.forEach((c, idx) => {
+                const cx = mapX(c.x), cy = mapY(c.y);
+                pcaCtx.beginPath();
+                if (c.is_gold) {
+                    pcaCtx.fillStyle = "#FFC700";
+                    pcaCtx.arc(cx, cy, 7 * window.devicePixelRatio, 0, Math.PI * 2);
+                    pcaCtx.shadowColor = "#FFC700";
+                    pcaCtx.shadowBlur = 15;
+                } else {
+                    pcaCtx.fillStyle = idx === coords.length - 1 ? "#00F0FF" : "rgba(255, 255, 255, 0.5)";
+                    pcaCtx.arc(cx, cy, (idx === coords.length - 1 ? 6 : 3.5) * window.devicePixelRatio, 0, Math.PI * 2);
+                    pcaCtx.shadowBlur = 0;
+                }
+                pcaCtx.fill();
+
+                // Draw label for recent or gold points
+                if (c.is_gold || idx === coords.length - 1) {
+                    pcaCtx.fillStyle = c.is_gold ? "#FFC700" : "#00F0FF";
+                    pcaCtx.font = `${10 * window.devicePixelRatio}px 'JetBrains Mono'`;
+                    pcaCtx.fillText(`[Step ${c.step}] ${c.label ? c.label.substring(0, 18) : ''}`, cx + 8, cy - 8);
+                }
+            });
+        }
+
+        function renderTelemetryChart() {
+            const w = telemetryCanvas.width;
+            const h = telemetryCanvas.height;
+            telemetryCtx.clearRect(0, 0, w, h);
+
+            const history = stateData.journal_history || [];
+            if (history.length < 2) return;
+
+            const margin = 30;
+            const stepCount = history.length;
+
+            function mapX(idx) { return margin + (idx / (stepCount - 1)) * (w - 2 * margin); }
+            function mapY(val) { return h - margin - (val * (h - 2 * margin)); }
+
+            // Draw grid line at gold threshold (0.55)
+            const threshY = mapY(stateData.gold_threshold || 0.55);
+            telemetryCtx.strokeStyle = "rgba(255, 199, 0, 0.4)";
+            telemetryCtx.setLineDash([5, 5]);
+            telemetryCtx.beginPath();
+            telemetryCtx.moveTo(margin, threshY);
+            telemetryCtx.lineTo(w - margin, threshY);
+            telemetryCtx.stroke();
+            telemetryCtx.setLineDash([]);
+
+            // Draw Novelty Line (Cyan)
+            telemetryCtx.beginPath();
+            telemetryCtx.strokeStyle = "#00F0FF";
+            telemetryCtx.lineWidth = 2.5 * window.devicePixelRatio;
+            history.forEach((item, idx) => {
+                const cx = mapX(idx), cy = mapY(item.novelty_score || 0);
+                if (idx === 0) telemetryCtx.moveTo(cx, cy);
+                else telemetryCtx.lineTo(cx, cy);
+            });
+            telemetryCtx.stroke();
+
+            // Draw Coherence Line (Purple - normalized 0-1)
+            telemetryCtx.beginPath();
+            telemetryCtx.strokeStyle = "#9D00FF";
+            telemetryCtx.lineWidth = 2 * window.devicePixelRatio;
+            history.forEach((item, idx) => {
+                const score = (item.coherence_score || 5) / 10.0;
+                const cx = mapX(idx), cy = mapY(score);
+                if (idx === 0) telemetryCtx.moveTo(cx, cy);
+                else telemetryCtx.lineTo(cx, cy);
+            });
+            telemetryCtx.stroke();
+        }
+
+        function renderJournalFeed() {
+            const feed = document.getElementById('journalFeed');
+            const history = stateData.journal_history || [];
+            if (history.length === 0) return;
+
+            feed.innerHTML = history.slice().reverse().map(item => `
+                <div class="feed-entry ${item.is_gold ? 'gold-entry' : ''}">
+                    <div class="entry-header">
+                        <span>Step ${item.step} | ${item.location}</span>
+                        <span>Novelty: ${(item.novelty_score || 0).toFixed(2)} | Coh: ${item.coherence_score || '-'}/10</span>
+                    </div>
+                    <div class="entry-text">${item.response}</div>
+                    <div class="entry-tags">
+                        ${item.is_gold ? '<span class="tag gold-tag">🌟 GOLD VEIN</span>' : ''}
+                        ${item.concept_blended ? '<span class="tag purple-tag">🧬 BLENDED</span>' : ''}
+                        ${item.leap_triggered ? '<span class="tag cyan-tag">⚡ QUANTUM WARP</span>' : ''}
+                        <span class="tag">Next: ${item.next_location}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGoldVault() {
+            const vault = document.getElementById('goldVaultList');
+            const goldItems = stateData.gold_vault || [];
+            if (goldItems.length === 0) {
+                vault.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No gold veins discovered yet on this expedition.</div>`;
+                return;
+            }
+
+            vault.innerHTML = goldItems.map(g => `
+                <div style="background: rgba(255,199,0,0.06); border: 1px solid rgba(255,199,0,0.3); padding: 0.8rem; border-radius: 8px; font-size: 0.85rem;">
+                    <div style="color: var(--accent-gold); font-weight: 700; margin-bottom: 0.3rem;">Step ${g.step}: ${g.location}</div>
+                    <div style="color: #E2E8F0; line-height: 1.4;">"${g.response.substring(0, 140)}..."</div>
+                </div>
+            `).join('');
+        }
+
+        // Control Button Handlers
+        document.getElementById('btnWarp').addEventListener('click', async () => {
+            await fetch('/api/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "FORCE_WARP" })
+            });
+            alert("🌀 Quantum Vector Warp signal transmitted!");
+        });
+
+        document.getElementById('pushSlider').addEventListener('input', (e) => {
+            document.getElementById('pushVal').innerText = e.target.value;
+        });
+        document.getElementById('repulsionSlider').addEventListener('input', (e) => {
+            document.getElementById('repulsionVal').innerText = e.target.value;
+        });
+        document.getElementById('goldThreshSlider').addEventListener('input', (e) => {
+            document.getElementById('goldThreshVal').innerText = e.target.value;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+llama-cpp-python>=0.2.75
+sentence-transformers>=2.7.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
