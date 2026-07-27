@@ -604,7 +604,7 @@
             const h = telemetryCanvas.height;
             telemetryCtx.clearRect(0, 0, w, h);
 
-            const history = stateData.journal_history || [];
+            const history = stateData.telemetry_history || stateData.journal_history || [];
             if (history.length < 2) return;
 
             const margin = 30;

@@ -35,6 +35,7 @@ class ExpeditionState:
         self.sheaf_obstruction = 0.0
         
         self.journal_history = []  # List of step dictionaries
+        self.telemetry_history = []# Lightweight telemetry list without text
         self.gold_vault = []       # List of gold items
         self.frontier_nodes = []   # List of Pareto frontier node summaries
         self.graph_nodes = []      # List of node objects for visual graph
@@ -57,6 +58,15 @@ class ExpeditionState:
             self.sheaf_obstruction = step_data.get("sheaf_obstruction", self.sheaf_obstruction)
             
             self.journal_history.append(step_data)
+            
+            # Append lightweight telemetry entry for chart rendering without text bloat
+            self.telemetry_history.append({
+                "step": step_data.get("step"),
+                "novelty_score": step_data.get("novelty_score"),
+                "coherence_score": step_data.get("coherence_score"),
+                "cohomological_dim": step_data.get("cohomological_dim")
+            })
+
             if step_data.get("is_gold"):
                 self.gold_vault.append(step_data)
                 
@@ -100,12 +110,13 @@ class ExpeditionState:
                 "sheaf_obstruction": self.sheaf_obstruction,
                 "gold_count": len(self.gold_vault),
                 "journal_count": len(self.journal_history),
-                "journal_history": self.journal_history[-15:], # Last 15 for payload efficiency
-                "gold_vault": self.gold_vault,
+                "journal_history": self.journal_history[-15:], # Last 15 for feed
+                "telemetry_history": self.telemetry_history[-150:], # Cap lightweight telemetry to last 150
+                "gold_vault": self.gold_vault[-25:], # Last 25 gold items
                 "frontier_nodes": self.frontier_nodes,
                 "graph_nodes": self.graph_nodes[-30:],
                 "graph_edges": self.graph_edges[-40:],
-                "pca_coords": self.pca_coords
+                "pca_coords": self.pca_coords[-150:] # Cap PCA payload to last 150 points for low bandwidth
             }
 
 GLOBAL_STATE = ExpeditionState()
