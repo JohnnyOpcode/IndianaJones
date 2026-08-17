@@ -8,7 +8,7 @@ class ExplorerConfig:
     model_path: str = "./LLM/Meta-Llama-3-8B-Instruct.Q4_K_M.gguf"
     starting_concept: str = "The relationship between truth and confabulations"
     steps: int = 100
-    gold_threshold: float = 0.90
+    gold_threshold: float = 0.70
     port: int = 8000
     enable_dashboard: bool = True
     output_dir: str = "."
@@ -47,7 +47,7 @@ def parse_args() -> ExplorerConfig:
         "--gold-threshold",
         "-g",
         type=float,
-        default=0.90,
+        default=0.70,
         help="Novelty threshold for gold vein appraisal.",
     )
     parser.add_argument(

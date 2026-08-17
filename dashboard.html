@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Indiana Jones: Latent Space Expedition Command Center</title>
+    <meta name="description" content="Real-time AI exploration dashboard for navigating high-dimensional latent space with persistent cohomology, novelty scoring, and vector steering controls.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -18,6 +19,8 @@
             --accent-cyan-glow: rgba(0, 240, 255, 0.25);
             --accent-purple: #9D00FF;
             --accent-red: #FF3366;
+            --accent-green: #00FF88;
+            --accent-magenta: #FF00E5;
             --text-main: #F0F4F8;
             --text-muted: #8E9BAE;
         }
@@ -36,20 +39,22 @@
             overflow-x: hidden;
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.04) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(255, 199, 0, 0.04) 0%, transparent 40%);
+                radial-gradient(circle at 90% 80%, rgba(255, 199, 0, 0.04) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(157, 0, 255, 0.02) 0%, transparent 50%);
         }
 
+        /* ---- Header ---- */
         header {
-            padding: 1.25rem 2rem;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--card-border);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(7, 9, 14, 0.85);
+            background: rgba(7, 9, 14, 0.88);
         }
 
         .brand {
@@ -61,6 +66,12 @@
         .brand-icon {
             font-size: 2rem;
             filter: drop-shadow(0 0 10px var(--accent-gold-glow));
+            animation: brandFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes brandFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
         }
 
         .brand-title {
@@ -73,11 +84,18 @@
         }
 
         .brand-subtitle {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--accent-cyan);
             font-family: 'JetBrains Mono', monospace;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .expedition-status-pill {
@@ -89,8 +107,21 @@
             border: 1px solid rgba(0, 240, 255, 0.3);
             border-radius: 999px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--accent-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .expedition-status-pill.paused {
+            background: rgba(255, 199, 0, 0.1);
+            border-color: rgba(255, 199, 0, 0.4);
+            color: var(--accent-gold);
+        }
+
+        .expedition-status-pill.completed {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: rgba(0, 255, 136, 0.4);
+            color: var(--accent-green);
         }
 
         .status-dot {
@@ -102,17 +133,64 @@
             animation: pulse 2s infinite;
         }
 
+        .status-dot.paused {
+            background: var(--accent-gold);
+            box-shadow: 0 0 8px var(--accent-gold);
+            animation: none;
+        }
+
+        .status-dot.completed {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: none;
+        }
+
         @keyframes pulse {
             0% { opacity: 0.4; transform: scale(0.9); }
             50% { opacity: 1.0; transform: scale(1.2); }
             100% { opacity: 0.4; transform: scale(0.9); }
         }
 
+        .btn-header {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+            padding: 0.38rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.14);
+            transform: translateY(-1px);
+        }
+
+        .btn-header.restart {
+            border-color: rgba(255, 199, 0, 0.35);
+        }
+        .btn-header.restart:hover {
+            background: rgba(255, 199, 0, 0.12);
+        }
+        .btn-header.export {
+            border-color: rgba(0, 255, 136, 0.35);
+        }
+        .btn-header.export:hover {
+            background: rgba(0, 255, 136, 0.12);
+        }
+
+        /* ---- Dashboard Grid ---- */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2.2fr 1fr;
             gap: 1.5rem;
-            padding: 2rem;
+            padding: 1.5rem 2rem;
             max-width: 1800px;
             margin: 0 auto;
         }
@@ -121,34 +199,40 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 1.25rem;
             backdrop-filter: blur(16px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
+            transition: border-color 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 0.75rem;
+            padding-bottom: 0.6rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .card-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
+        /* ---- Metrics Bar ---- */
         .metrics-bar {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 0.75rem;
+            gap: 0.6rem;
         }
 
         @media (max-width: 1400px) {
@@ -161,21 +245,27 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 1rem;
+            padding: 0.8rem;
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.2rem;
+            transition: all 0.3s;
+        }
+
+        .metric-tile:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .metric-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .metric-val {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 800;
             font-family: 'JetBrains Mono', monospace;
         }
@@ -184,14 +274,17 @@
         .metric-val.cyan { color: var(--accent-cyan); text-shadow: 0 0 12px var(--accent-cyan-glow); }
         .metric-val.purple { color: var(--accent-purple); }
 
+        /* ---- PCA Canvas ---- */
         #pcaCanvas {
             width: 100%;
             height: 380px;
             background: rgba(4, 6, 12, 0.8);
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: crosshair;
         }
 
+        /* ---- Telemetry Charts ---- */
         .chart-container {
             width: 100%;
             height: 200px;
@@ -206,19 +299,41 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
+        .chart-legend {
+            display: flex;
+            gap: 1.1rem;
+            align-items: center;
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .legend-line {
+            width: 14px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        /* ---- Journal Feed ---- */
         .journal-feed {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            max-height: 420px;
+            gap: 0.6rem;
+            max-height: 380px;
             overflow-y: auto;
             padding-right: 0.5rem;
         }
 
-        .journal-feed::-webkit-scrollbar {
-            width: 6px;
+        .journal-feed::-webkit-scrollbar, .vault-list::-webkit-scrollbar {
+            width: 5px;
         }
-        .journal-feed::-webkit-scrollbar-thumb {
+        .journal-feed::-webkit-scrollbar-thumb, .vault-list::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.15);
             border-radius: 4px;
         }
@@ -227,16 +342,16 @@
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            padding: 1rem;
+            padding: 0.85rem;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            transition: transform 0.2s, border-color 0.2s;
+            gap: 0.4rem;
+            transition: border-color 0.2s, background-color 0.2s;
         }
 
         .feed-entry:hover {
-            border-color: rgba(0, 240, 255, 0.3);
-            transform: translateX(4px);
+            border-color: rgba(0, 240, 255, 0.35);
+            background: rgba(255, 255, 255, 0.04);
         }
 
         .feed-entry.gold-entry {
@@ -248,27 +363,27 @@
         .entry-header {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
         }
 
         .entry-text {
-            font-size: 0.92rem;
-            line-height: 1.5;
+            font-size: 0.88rem;
+            line-height: 1.45;
             color: #DCE3ED;
         }
 
         .entry-tags {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             flex-wrap: wrap;
         }
 
         .tag {
-            padding: 0.2rem 0.5rem;
+            padding: 0.15rem 0.45rem;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-family: 'JetBrains Mono', monospace;
             background: rgba(255, 255, 255, 0.06);
             color: var(--text-muted);
@@ -278,22 +393,23 @@
         .tag.cyan-tag { background: rgba(0, 240, 255, 0.15); color: var(--accent-cyan); }
         .tag.purple-tag { background: rgba(157, 0, 255, 0.2); color: #D699FF; }
 
+        /* ---- Control Panel ---- */
         .control-panel {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .btn {
             background: linear-gradient(135deg, var(--accent-cyan) 0%, #0088FF 100%);
             color: #000;
             font-weight: 700;
-            padding: 0.75rem 1.25rem;
+            padding: 0.65rem 1rem;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
@@ -317,24 +433,597 @@
         .slider-group {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.3rem;
         }
 
         .slider-label {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
         }
 
         input[type="range"] {
             width: 100%;
             accent-color: var(--accent-cyan);
+            cursor: pointer;
         }
 
+        /* ---- Concept Teleporter ---- */
+        .teleport-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .teleport-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .teleport-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
+        }
+
+        .teleport-input::placeholder {
+            color: rgba(142, 155, 174, 0.5);
+        }
+
+        .btn-teleport {
+            background: linear-gradient(135deg, #0088FF 0%, var(--accent-purple) 100%);
+            color: #FFF;
+            font-weight: 700;
+            padding: 0.55rem 0.85rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-teleport:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(157, 0, 255, 0.3);
+        }
+
+        /* ---- Persona Selector ---- */
+        .persona-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(157, 0, 255, 0.25);
+            border-radius: 8px;
+            padding: 0.5rem 0.7rem;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239D00FF' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+            padding-right: 2rem;
+        }
+
+        .persona-select:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 12px rgba(157, 0, 255, 0.15);
+        }
+
+        .persona-select option {
+            background: #101624;
+            color: var(--text-main);
+        }
+
+        /* ---- Topology Radar ---- */
+        .topology-radar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+
+        .radar-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.7rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .radar-cell.active {
+            border-color: rgba(157, 0, 255, 0.4);
+            background: rgba(157, 0, 255, 0.06);
+        }
+
+        .radar-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            transition: color 0.3s;
+        }
+
+        .radar-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        /* ---- Node Detail Modal ---- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: rgba(16, 22, 36, 0.96);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 240, 255, 0.15);
+            animation: modalIn 0.25s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-left: 1rem;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 51, 102, 0.3);
+            border-color: var(--accent-red);
+        }
+
+        .modal-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-metric {
+            text-align: center;
+            padding: 0.6rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-metric-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .modal-metric-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .modal-body-text {
+            font-size: 0.94rem;
+            line-height: 1.6;
+            color: #E2E8F0;
+            padding: 1.1rem;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .modal-nav-btns {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .modal-nav-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .modal-nav-btn:hover:not(:disabled) {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .modal-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* ---- Copy Buttons ---- */
+        .btn-copy {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--accent-cyan);
+            padding: 0.48rem 0.95rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+        .btn-copy:hover {
+            background: rgba(0, 240, 255, 0.25);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 4px 15px var(--accent-cyan-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-copy-social {
+            background: linear-gradient(135deg, rgba(255, 199, 0, 0.18) 0%, rgba(255, 0, 229, 0.18) 100%);
+            border: 1px solid rgba(255, 199, 0, 0.4);
+            color: var(--accent-gold);
+            padding: 0.48rem 0.95rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+        .btn-copy-social:hover {
+            background: linear-gradient(135deg, rgba(255, 199, 0, 0.35) 0%, rgba(255, 0, 229, 0.35) 100%);
+            border-color: var(--accent-gold);
+            box-shadow: 0 4px 20px var(--accent-gold-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-mini-copy {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-muted);
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .btn-mini-copy:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        .btn-mini-social {
+            background: linear-gradient(135deg, rgba(255, 199, 0, 0.22) 0%, rgba(255, 0, 229, 0.22) 100%);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            box-shadow: 0 0 8px rgba(255, 199, 0, 0.25);
+        }
+        .btn-mini-social:hover {
+            background: linear-gradient(135deg, rgba(255, 199, 0, 0.45) 0%, rgba(255, 0, 229, 0.45) 100%);
+            border-color: #FFC700;
+            color: #FFF;
+            box-shadow: 0 0 15px rgba(255, 199, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .btn-card-happy-social {
+            background: linear-gradient(135deg, rgba(255, 199, 0, 0.28) 0%, rgba(255, 0, 229, 0.28) 100%);
+            border: 1.5px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 0.28rem 0.68rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            box-shadow: 0 0 10px rgba(255, 199, 0, 0.3);
+        }
+        .btn-card-happy-social:hover {
+            background: linear-gradient(135deg, rgba(255, 199, 0, 0.55) 0%, rgba(255, 0, 229, 0.55) 100%);
+            border-color: #FFF;
+            color: #FFF;
+            box-shadow: 0 0 20px rgba(255, 199, 0, 0.75);
+            transform: scale(1.04);
+        }
+
+        /* ---- Selection Floating Happy Face Pop-up ---- */
+        .selection-popup {
+            position: fixed;
+            display: none;
+            z-index: 999999;
+            background: linear-gradient(135deg, rgba(20, 28, 45, 0.98) 0%, rgba(10, 14, 26, 0.98) 100%);
+            border: 1.5px solid var(--accent-gold);
+            border-radius: 20px;
+            padding: 0.35rem 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 25px var(--accent-gold-glow);
+            animation: popIn 0.2s ease-out;
+            pointer-events: auto;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.85) translateY(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .btn-selection-social {
+            background: linear-gradient(135deg, #FFC700 0%, #FF00E5 100%);
+            color: #000;
+            font-weight: 800;
+            font-size: 0.82rem;
+            border: none;
+            border-radius: 12px;
+            padding: 0.45rem 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-selection-social:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 199, 0, 0.6);
+        }
+
+        /* ---- Feed Search & Filters ---- */
+        .feed-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .feed-search-input {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.42rem 0.75rem;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .feed-search-input:focus {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.04);
+            box-shadow: 0 0 12px var(--accent-cyan-glow);
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-pill:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+        }
+        .filter-pill.active {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+        .filter-pill.active.gold {
+            background: rgba(255, 199, 0, 0.15);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        /* ---- Toast Notification ---- */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(16, 22, 36, 0.95);
+            border: 1px solid var(--accent-cyan);
+            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.25);
+            color: var(--text-main);
+            padding: 0.75rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            backdrop-filter: blur(12px);
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: auto;
+        }
+
+        .toast.success-gold {
+            border-color: var(--accent-gold);
+            box-shadow: 0 10px 30px var(--accent-gold-glow);
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ---- PCA Hover Tooltip ---- */
+        .pca-tooltip {
+            position: fixed;
+            pointer-events: none;
+            z-index: 150;
+            background: rgba(7, 9, 14, 0.92);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.78rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            display: none;
+            transform: translate(-50%, -120%);
+        }
+
+        /* ---- Completion Banner ---- */
+        .completion-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.12) 0%, rgba(0, 240, 255, 0.12) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.35);
+            border-radius: 14px;
+            padding: 0.95rem 1.4rem;
+            margin: 1.25rem 2rem 0 2rem;
+            max-width: 1800px;
+            font-size: 0.88rem;
+            color: var(--accent-green);
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 25px rgba(0, 255, 136, 0.12);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .completion-banner.active {
+            display: flex;
+        }
+
+        /* ---- Responsive ---- */
         @media (max-width: 1100px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            .metrics-bar {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -346,18 +1035,52 @@
             <span class="brand-icon">🗺️</span>
             <div>
                 <div class="brand-title">INDIANA JONES</div>
-                <div class="brand-subtitle">Latent Space Vector Explorer v2.0</div>
+                <div class="brand-subtitle">Latent Space Vector Explorer v2.2</div>
             </div>
         </div>
-        <div class="expedition-status-pill">
-            <div class="status-dot"></div>
-            <span id="statusText">LIVE EXPEDITION ACTIVE</span>
+        <div class="header-controls">
+            <button class="btn-header" id="btnOpenArchive" style="background: rgba(255, 199, 0, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);">
+                <span>📂</span>
+                <span>Archive Sessions</span>
+            </button>
+            <button class="btn-header export" id="btnExport">
+                <span>📥</span>
+                <span>Export Journal</span>
+            </button>
+            <button class="btn-header restart" id="btnRestart">
+                <span>🔄</span>
+                <span>Restart Expedition</span>
+            </button>
+            <button class="btn-header" id="btnTogglePause">
+                <span id="pauseIcon">⏸️</span>
+                <span id="pauseBtnText">Pause Expedition</span>
+            </button>
+            <div class="expedition-status-pill" id="statusPill">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">LIVE EXPEDITION ACTIVE</span>
+            </div>
         </div>
     </header>
 
+    <!-- Expedition Completion Banner -->
+    <div class="completion-banner" id="completionBanner">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.5rem;">😊</span>
+            <div>
+                <div style="font-weight: 800; letter-spacing: -0.2px;">EXPEDITION COMPLETE — RESEARCH & EXPLORATION MODE ACTIVE</div>
+                <div style="font-size: 0.78rem; color: var(--text-main); opacity: 0.85;" id="completionStatsText">
+                    All steps and discovered gold veins are ready for deep research inspection and social stream sharing.
+                </div>
+            </div>
+        </div>
+        <button class="btn-copy-social" id="btnCopyCompletionDigest">
+            <span>😊 Copy Research Digest for Social Feed</span>
+        </button>
+    </div>
+
     <div class="dashboard-grid">
         <!-- Main Column -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             
             <!-- Top Telemetry Cards -->
             <div class="metrics-bar">
@@ -379,7 +1102,7 @@
                 </div>
                 <div class="metric-tile">
                     <span class="metric-label">Sheaf Obstruction (Ω)</span>
-                    <span class="metric-val" style="color: #FF00E5;" id="metricSheaf">0.000</span>
+                    <span class="metric-val" style="color: var(--accent-magenta);" id="metricSheaf">0.000</span>
                 </div>
                 <div class="metric-tile">
                     <span class="metric-label">Active Temperature</span>
@@ -387,7 +1110,7 @@
                 </div>
                 <div class="metric-tile">
                     <span class="metric-label">Explorer Energy</span>
-                    <span class="metric-val" style="color: #00FF88;" id="metricEnergy">100%</span>
+                    <span class="metric-val" style="color: var(--accent-green);" id="metricEnergy">100%</span>
                 </div>
             </div>
 
@@ -395,7 +1118,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">🌐 High-Dimensional Latent Trajectory (2D PCA Vector Push)</div>
-                    <span class="tag cyan-tag" id="activePersona">Lens: Synthetic Epigenetics</span>
+                    <span class="tag cyan-tag" id="activePersona">Lens: Initializing...</span>
                 </div>
                 <canvas id="pcaCanvas"></canvas>
             </div>
@@ -404,16 +1127,33 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">📈 Real-Time Telemetry (KDE Novelty vs. Coherence)</div>
+                    <div class="chart-legend">
+                        <div class="legend-item"><div class="legend-line" style="background: #00F0FF;"></div><span>KDE Novelty</span></div>
+                        <div class="legend-item"><div class="legend-line" style="background: #9D00FF;"></div><span>Coherence</span></div>
+                        <div class="legend-item"><div class="legend-line" style="background: #FF00E5;"></div><span>Cohom Dim</span></div>
+                        <div class="legend-item"><div class="legend-line" style="background: #FFC700; border-top: 2px dashed #FFC700; height: 0;"></div><span>Gold Threshold</span></div>
+                    </div>
                 </div>
                 <div class="chart-container">
                     <canvas id="telemetryCanvas" class="telemetryCanvas"></canvas>
                 </div>
             </div>
 
-            <!-- Recent Journal Discoveries -->
+            <!-- Real-Time Expedition Stream / Journal Feed -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">📜 Real-Time Expedition Stream</div>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);" id="feedCountIndicator">0 entries</span>
+                </div>
+                <div class="feed-controls">
+                    <input type="text" class="feed-search-input" id="journalSearchInput" placeholder="🔍 Search responses, concepts, lenses, historical sessions...">
+                    <div class="filter-pills">
+                        <button class="filter-pill active" data-filter="all">All</button>
+                        <button class="filter-pill gold" data-filter="gold">🌟 Gold Only</button>
+                        <button class="filter-pill" data-filter="loops">🌀 Loops/Voids</button>
+                        <button class="filter-pill" data-filter="warps">⚡ Warps</button>
+                        <button class="filter-pill gold" id="btnStreamArchive" style="margin-left: 0.4rem; font-weight: 700;" title="Load historical expedition JSONs into stream">📂 Load Journal JSONs</button>
+                    </div>
                 </div>
                 <div class="journal-feed" id="journalFeed">
                     <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem;">
@@ -425,15 +1165,39 @@
         </div>
 
         <!-- Sidebar / Control Panel -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             
+            <!-- Active Concept Coordinates -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">📍 Active Concept Coordinates</div>
                 </div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--accent-cyan); word-break: break-word; background: rgba(0,240,255,0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(0,240,255,0.2);" id="activeLocation">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; color: var(--accent-cyan); word-break: break-word; background: rgba(0,240,255,0.05); padding: 0.85rem; border-radius: 8px; border: 1px solid rgba(0,240,255,0.2);" id="activeLocation">
                     Initializing Dropping Point...
                 </div>
+            </div>
+
+            <!-- Concept Teleportation & Persona Lens -->
+            <div class="card control-panel">
+                <div class="card-header">
+                    <div class="card-title">🚀 Concept Teleportation & Persona Lens</div>
+                </div>
+
+                <div class="slider-label">
+                    <span>Drop Explorer at Custom Concept</span>
+                </div>
+                <div class="teleport-group">
+                    <input type="text" class="teleport-input" id="teleportInput" placeholder="e.g. Bioluminescent Fungi Networks" maxlength="120">
+                    <button class="btn-teleport" id="btnTeleport">🚀 Drop Here</button>
+                </div>
+
+                <div class="slider-label" style="margin-top: 0.3rem;">
+                    <span>Active Persona Lens</span>
+                    <span id="personaIdxLabel" style="color: var(--accent-purple);">0</span>
+                </div>
+                <select class="persona-select" id="personaSelect">
+                    <option value="0">Loading persona lenses...</option>
+                </select>
             </div>
 
             <!-- Steering & Vector Controls -->
@@ -465,9 +1229,44 @@
                 <div class="slider-group">
                     <div class="slider-label">
                         <span>Gold Threshold</span>
-                        <span id="goldThreshVal">0.55</span>
+                        <span id="goldThreshVal">0.70</span>
                     </div>
-                    <input type="range" id="goldThreshSlider" min="0.3" max="0.8" step="0.02" value="0.55">
+                    <input type="range" id="goldThreshSlider" min="0.3" max="0.95" step="0.02" value="0.70">
+                </div>
+            </div>
+
+            <!-- Topological Void & Loop Radar -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🔬 Topological Radar</div>
+                </div>
+                <div class="topology-radar">
+                    <div class="radar-cell" id="radarB1Cell">
+                        <span class="radar-val" style="color: var(--accent-purple);" id="radarB1">0</span>
+                        <span class="radar-label">b₁ 1-Cycle Loops</span>
+                    </div>
+                    <div class="radar-cell" id="radarB2Cell">
+                        <span class="radar-val" style="color: var(--accent-magenta);" id="radarB2">0</span>
+                        <span class="radar-label">b₂ 2-Void Cavities</span>
+                    </div>
+                    <div class="radar-cell" id="radarSheafCell">
+                        <span class="radar-val" style="color: var(--accent-red);" id="radarSheaf">0.000</span>
+                        <span class="radar-label">Sheaf Obstruction Ω</span>
+                    </div>
+                    <div class="radar-cell" id="radarCdCell">
+                        <span class="radar-val" style="color: var(--accent-cyan);" id="radarCd">1.00</span>
+                        <span class="radar-label">Cohomological Dim</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pareto Frontier Nodes -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🏆 Pareto Frontier Trajectory</div>
+                </div>
+                <div id="paretoFrontierList" class="vault-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 240px; overflow-y: auto;">
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Calculating Pareto optimal nodes...</div>
                 </div>
             </div>
 
@@ -475,8 +1274,9 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">💎 Gold Vault Highlights</div>
+                    <button class="btn-mini-copy btn-mini-social" id="btnCopyAllGold">😊 Copy Thread</button>
                 </div>
-                <div id="goldVaultList" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 350px; overflow-y: auto;">
+                <div id="goldVaultList" class="vault-list" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 300px; overflow-y: auto;">
                     <div style="color: var(--text-muted); font-size: 0.85rem;">No gold veins discovered yet on this expedition.</div>
                 </div>
             </div>
@@ -484,11 +1284,110 @@
         </div>
     </div>
 
+    <!-- Node Detail Inspection Modal -->
+    <div class="modal-overlay" id="nodeModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="modalTitle">🔍 Step Detail</div>
+                    <div id="modalSubtitle" style="font-size: 0.78rem; color: var(--accent-cyan); font-family: 'JetBrains Mono'; margin-top: 0.2rem;">Lens: -</div>
+                </div>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-metrics" id="modalMetrics"></div>
+            
+            <div style="margin-bottom: 0.75rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 0.35rem;">Discovered Response</div>
+                <div class="modal-body-text" id="modalBody">No data available.</div>
+            </div>
+
+            <div style="margin-bottom: 1rem; background: rgba(0, 240, 255, 0.04); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.8rem;">
+                <span style="color: var(--text-muted); font-weight: 600;">Next Concept Target: </span>
+                <span id="modalNextTarget" style="color: var(--accent-cyan); font-family: 'JetBrains Mono'; font-weight: 600;">Uncharted</span>
+            </div>
+
+            <div class="modal-actions">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn-copy" id="btnModalCopyRaw">
+                        <span>📋 Copy Response</span>
+                    </button>
+                    <button class="btn-copy-social" id="btnModalCopySocial">
+                        <span>😊 Share to Social Feed</span>
+                    </button>
+                </div>
+                <div class="modal-nav-btns">
+                    <button class="modal-nav-btn" id="btnModalPrev">← Prev Step</button>
+                    <button class="modal-nav-btn" id="btnModalNext">Next Step →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archive / Historical Journal Explorer Modal -->
+    <div class="modal-overlay" id="archiveModal">
+        <div class="modal-card" style="max-width: 820px; width: 92%;">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" style="color: var(--accent-gold); display: flex; align-items: center; gap: 0.5rem;">
+                        <span>📂</span> Historical Latent Space Explorer
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+                        Browse, load, and combine historical expedition journals to search across the broader latent space.
+                    </div>
+                </div>
+                <button class="modal-close" id="archiveModalClose">✕</button>
+            </div>
+
+            <!-- Upload Custom File Dropzone -->
+            <div style="background: rgba(255, 199, 0, 0.05); border: 1.5px dashed rgba(255, 199, 0, 0.35); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; text-align: center;">
+                <div style="font-weight: 700; color: var(--accent-gold); font-size: 0.9rem; margin-bottom: 0.3rem;">
+                    📤 Upload Custom Journal JSON
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                    Bring any local expedition journal file (.json) directly into the interactive research dashboard.
+                </div>
+                <input type="file" id="journalFileInput" accept=".json" style="display: none;">
+                <div style="display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn-card-happy-social" onclick="document.getElementById('journalFileInput').click();">
+                        <span>📁 Select Local JSON File...</span>
+                    </button>
+                    <button class="btn-mini-copy" id="btnResetLiveRun" style="background: rgba(0, 255, 136, 0.15); border-color: var(--accent-green); color: var(--accent-green); padding: 0.4rem 0.8rem;" onclick="resetToLiveRun()">
+                        <span>🔄 Restore Active Live Stream</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- List of Saved Server Journals -->
+            <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>Discovered Server Sessions:</span>
+                <span id="archiveCountBadge" style="color: var(--accent-cyan); font-family: 'JetBrains Mono'; font-size: 0.75rem;">Scanning...</span>
+            </div>
+
+            <div id="archiveJournalsList" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 380px; overflow-y: auto; padding-right: 0.3rem;">
+                <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem;">Loading archived journal sessions...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Text Selection Pop-up for Social Feeds -->
+    <div class="selection-popup" id="selectionPopup">
+        <button class="btn-selection-social" id="btnCopySelectionSocial">
+            😊 Copy Selection for Social Feed
+        </button>
+    </div>
+
+    <!-- Floating Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Floating PCA Tooltip -->
+    <div class="pca-tooltip" id="pcaTooltip"></div>
+
     <script>
         const pcaCanvas = document.getElementById('pcaCanvas');
         const pcaCtx = pcaCanvas.getContext('2d');
         const telemetryCanvas = document.getElementById('telemetryCanvas');
         const telemetryCtx = telemetryCanvas.getContext('2d');
+        const pcaTooltip = document.getElementById('pcaTooltip');
 
         function resizeCanvases() {
             pcaCanvas.width = pcaCanvas.offsetWidth * window.devicePixelRatio;
@@ -500,11 +1399,76 @@
         resizeCanvases();
 
         let stateData = null;
+        let isDraggingSliders = false;
+        let updateDebounceTimer = null;
+        let personasPopulated = false;
+
+        let lastRenderedFeedHtml = '';
+        let lastRenderedParetoHtml = '';
+        let lastRenderedGoldHtml = '';
+        let isSelectingOrInteracting = false;
+        let lastStateFingerprint = '';
+
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('#journalFeed, #goldVaultList, #paretoFrontierList, #nodeModal, .selection-popup, .feed-entry')) {
+                isSelectingOrInteracting = true;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            setTimeout(() => {
+                const sel = window.getSelection();
+                if (!sel || sel.toString().trim().length === 0) {
+                    isSelectingOrInteracting = false;
+                }
+            }, 200);
+        });
+
+        function isUserSelectingText() {
+            const sel = window.getSelection();
+            return sel && sel.toString().trim().length > 0;
+        }
+
+        function getStateFingerprint(s) {
+            if (!s) return '';
+            const step = s.current_step || 0;
+            const gold = s.gold_count || 0;
+            const paused = s.is_paused ? '1' : '0';
+            const status = s.status || '';
+            const histLen = s.journal_history ? s.journal_history.length : 0;
+            return `${step}_${gold}_${paused}_${status}_${histLen}`;
+        }
+
+        // Interactive State
+        let journalStepMap = new Map(); // stepNum -> stepData
+        let currentModalStep = 1;
+        let feedSearchQuery = '';
+        let activeFilterPill = 'all';
+        let mappedPCACoords = []; // store mapped PCA coords for click/hover
 
         async function fetchState() {
             try {
                 const resp = await fetch('/api/state');
                 stateData = await resp.json();
+                
+                // Build step map from journal_history
+                if (stateData.journal_history) {
+                    stateData.journal_history.forEach(item => {
+                        journalStepMap.set(item.step, item);
+                    });
+                }
+
+                // If user is currently dragging/selecting text, skip DOM and canvas re-renders!
+                if (isSelectingOrInteracting || isUserSelectingText()) {
+                    return;
+                }
+
+                const fingerprint = getStateFingerprint(stateData);
+                if (fingerprint === lastStateFingerprint) {
+                    return; // No change from server, skip re-renders completely!
+                }
+                lastStateFingerprint = fingerprint;
+
                 renderUI();
             } catch (e) {
                 console.error("Error fetching state:", e);
@@ -513,46 +1477,291 @@
         setInterval(fetchState, 1000);
         fetchState();
 
+        // Toast Feedback System
+        function showToast(msg, isGold = false) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${isGold ? 'success-gold' : ''}`;
+            toast.innerHTML = `<span>${isGold ? '😊' : '📋'}</span><span>${msg}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Copy Helper
+        async function copyToClipboard(text, message = 'Copied to clipboard! 📋', isGold = false) {
+            let success = false;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                    success = true;
+                }
+            } catch (e) {
+                console.warn("navigator.clipboard failed, using fallback:", e);
+            }
+
+            if (!success) {
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    textarea.style.left = '-9999px';
+                    textarea.style.top = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    success = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                } catch (err) {
+                    console.error("ExecCommand copy failed:", err);
+                }
+            }
+
+            if (success) {
+                showToast(message, isGold);
+            } else {
+                showToast("Failed to copy automatically", false);
+            }
+        }
+
+        // Social Media Post Formatter
+        function formatSocialPost(item) {
+            if (!item) return '';
+            const isGold = item.is_gold;
+            const goldEmoji = isGold ? '🌟 VEIN OF GOLD' : '🪨 Exploration Discovery';
+            const location = item.location || item.concept || 'Latent Space';
+            const persona = item.persona || 'Lateral Thinking Lens';
+            const step = item.step || '?';
+            const responseText = item.response || '';
+            const novelty = item.novelty_score !== undefined ? Number(item.novelty_score).toFixed(2) : (item.novelty ? Number(item.novelty).toFixed(2) : '-');
+            const coherence = item.coherence_score !== null && item.coherence_score !== undefined ? `${item.coherence_score}/10` : (item.coherence !== undefined ? `${item.coherence}/10` : '-');
+            const cd = item.cohomological_dim ? Number(item.cohomological_dim).toFixed(1) : '1.0';
+
+            return `🗺️ Latent Space Discovery [Step ${step} | ${location}]\n🔭 Lens: ${persona}\n\n"${responseText}"\n\n📊 Novelty: ${novelty} | Coherence: ${coherence} | cd: ${cd} | ${goldEmoji}\n😊 #IndianaJones #AIExploration #LatentSpace #LLM`;
+        }
+
+        function copyStepRaw(step, event) {
+            if (event) event.stopPropagation();
+            const numStep = Number(step);
+            let item = journalStepMap.get(numStep) || journalStepMap.get(String(step));
+
+            if (!item && stateData) {
+                if (stateData.journal_history) item = stateData.journal_history.find(i => Number(i.step) === numStep);
+                if (!item && stateData.gold_vault) item = stateData.gold_vault.find(i => Number(i.step) === numStep);
+                if (!item && stateData.frontier_nodes) item = stateData.frontier_nodes.find(i => Number(i.step) === numStep);
+            }
+
+            if (item && item.response) {
+                copyToClipboard(item.response, `Copied Step ${numStep} raw text! 📋`, item.is_gold);
+            } else {
+                showToast(`Step ${numStep} raw text not found`, false);
+            }
+        }
+
+        function copyStepSocial(step, event) {
+            if (event) event.stopPropagation();
+            const numStep = Number(step);
+            let item = journalStepMap.get(numStep) || journalStepMap.get(String(step));
+
+            if (!item && stateData) {
+                if (stateData.journal_history) item = stateData.journal_history.find(i => Number(i.step) === numStep);
+                if (!item && stateData.gold_vault) item = stateData.gold_vault.find(i => Number(i.step) === numStep);
+                if (!item && stateData.frontier_nodes) item = stateData.frontier_nodes.find(i => Number(i.step) === numStep);
+            }
+
+            if (item) {
+                const post = formatSocialPost(item);
+                copyToClipboard(post, `Copied Step ${numStep} social post! 😊`, item.is_gold || true);
+            } else {
+                showToast(`Step ${numStep} data loading...`, false);
+            }
+        }
+
+        function copyAllGold() {
+            const goldItems = stateData ? (stateData.gold_vault || []) : [];
+            if (goldItems.length === 0) {
+                showToast("No gold veins discovered yet!", false);
+                return;
+            }
+            const header = `💎 Indiana Jones Gold Vault Highlights (${goldItems.length} Veins Discovered)\nStarting Concept: ${stateData.starting_concept || 'Uncharted'}\n\n`;
+            const body = goldItems.map((g, idx) => {
+                return `[${idx + 1}/${goldItems.length}] Step ${g.step}: ${g.location}\n"${g.response}"\n(Nov: ${g.novelty_score ? Number(g.novelty_score).toFixed(2) : '-'} | Coh: ${g.coherence_score !== undefined ? g.coherence_score : '-'}/10)\n`;
+            }).join('\n---\n\n');
+            
+            copyToClipboard(header + body, `Copied all ${goldItems.length} Gold Veins for social thread! 😊`, true);
+        }
+
+        function copyFullResearchDigest() {
+            if (!stateData) return;
+            const history = stateData.journal_history || [];
+            const goldVault = stateData.gold_vault || [];
+            
+            let digest = `🏆 INDIANA JONES LATENT SPACE EXPEDITION RESEARCH DIGEST\n`;
+            digest += `====================================================\n`;
+            digest += `Starting Concept: ${stateData.starting_concept || 'Uncharted'}\n`;
+            digest += `Final Location: ${stateData.current_location || 'Completed'}\n`;
+            digest += `Total Steps Navigated: ${history.length}\n`;
+            digest += `Gold Veins Discovered: ${goldVault.length}\n`;
+            digest += `====================================================\n\n`;
+
+            if (goldVault.length > 0) {
+                digest += `💎 GOLD VAIN HIGHLIGHTS:\n`;
+                goldVault.forEach((g, idx) => {
+                    digest += `\n[Gold #${idx + 1} | Step ${g.step}] Concept: ${g.location}\n`;
+                    digest += `Lens: ${g.persona || 'Lateral Thinking'}\n`;
+                    digest += `"${g.response}"\n`;
+                    digest += `Metrics: Novelty ${g.novelty_score ? Number(g.novelty_score).toFixed(2) : '-'} | Coherence ${g.coherence_score ? g.coherence_score : '-'}/10 | cd: ${g.cohomological_dim ? Number(g.cohomological_dim).toFixed(1) : '-'}\n`;
+                });
+                digest += `\n----------------------------------------------------\n\n`;
+            }
+
+            digest += `📜 FULL STEP TRAJECTORY SUMMARY:\n`;
+            history.forEach(item => {
+                digest += `Step ${item.step} [${item.location}] (${item.is_gold ? '🌟 GOLD' : '🪨 Standard'})\n`;
+                digest += `"${item.response}"\n\n`;
+            });
+
+            copyToClipboard(digest, `Copied Full Research Expedition Digest for social feed! 😊`, true);
+        }
+
         function renderUI() {
             if (!stateData) return;
+
+            // Header status update
+            const isPaused = stateData.is_paused || stateData.status === "PAUSED";
+            const isCompleted = stateData.status === "COMPLETED";
+            const statusPill = document.getElementById('statusPill');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const pauseBtnText = document.getElementById('pauseBtnText');
+            const pauseIcon = document.getElementById('pauseIcon');
+
+            statusPill.classList.remove('paused', 'completed');
+            statusDot.classList.remove('paused', 'completed');
+
+            if (isPaused) {
+                statusPill.classList.add('paused');
+                statusDot.classList.add('paused');
+                statusText.innerText = "EXPEDITION PAUSED";
+                pauseBtnText.innerText = "Resume Expedition";
+                pauseIcon.innerText = "▶️";
+            } else if (isCompleted) {
+                statusPill.classList.add('completed');
+                statusDot.classList.add('completed');
+                statusText.innerText = "RESEARCH & EXPLORATION MODE";
+                pauseBtnText.innerText = "Pause Expedition";
+                pauseIcon.innerText = "⏸️";
+            } else {
+                statusText.innerText = "LIVE EXPEDITION ACTIVE";
+                pauseBtnText.innerText = "Pause Expedition";
+                pauseIcon.innerText = "⏸️";
+            }
+
+            // Completion Banner
+            const banner = document.getElementById('completionBanner');
+            if (isCompleted) {
+                banner.classList.add('active');
+                const totalSteps = stateData.current_step || (stateData.journal_history ? stateData.journal_history.length : 0);
+                const goldCount = stateData.gold_count || 0;
+                document.getElementById('completionStatsText').innerText = `Exploration finished with ${totalSteps} steps navigated and ${goldCount} Gold Veins discovered. All data popups, graphs, and copy tools are live for deep research.`;
+            } else {
+                banner.classList.remove('active');
+            }
 
             document.getElementById('metricStep').innerText = `${stateData.current_step}/${stateData.total_steps}`;
             document.getElementById('metricGold').innerText = stateData.gold_count;
             document.getElementById('metricCohomDim').innerText = Number(stateData.cohomological_dim || 1.0).toFixed(2);
             document.getElementById('metricBetti').innerText = `b₁:${stateData.betti_1 || 0} | b₂:${stateData.betti_2 || 0}`;
             document.getElementById('metricSheaf').innerText = Number(stateData.sheaf_obstruction || 0.0).toFixed(3);
-            document.getElementById('metricTemp').innerText = Number(stateData.temperature).toFixed(2);
-            document.getElementById('metricEnergy').innerText = `${stateData.energy}%`;
-            document.getElementById('activeLocation').innerText = stateData.current_location;
+            document.getElementById('metricTemp').innerText = Number(stateData.temperature || 0.85).toFixed(2);
+            document.getElementById('metricEnergy').innerText = `${stateData.energy || 100}%`;
+            document.getElementById('activeLocation').innerText = stateData.current_location || 'Initializing...';
             document.getElementById('activePersona').innerText = `Lens: ${stateData.current_persona || 'Lateral Thinker'}`;
+
+            // Topological Radar
+            const b1 = stateData.betti_1 || 0;
+            const b2 = stateData.betti_2 || 0;
+            const sheaf = stateData.sheaf_obstruction || 0;
+            const cd = stateData.cohomological_dim || 1.0;
+
+            document.getElementById('radarB1').innerText = b1;
+            document.getElementById('radarB2').innerText = b2;
+            document.getElementById('radarSheaf').innerText = Number(sheaf).toFixed(3);
+            document.getElementById('radarCd').innerText = Number(cd).toFixed(2);
+
+            document.getElementById('radarB1Cell').classList.toggle('active', b1 > 0);
+            document.getElementById('radarB2Cell').classList.toggle('active', b2 > 0);
+            document.getElementById('radarSheafCell').classList.toggle('active', sheaf > 0.01);
+            document.getElementById('radarCdCell').classList.toggle('active', cd > 1.5);
+
+            // Populate Persona Dropdown (once)
+            if (!personasPopulated && stateData.personas && stateData.personas.length > 0) {
+                const sel = document.getElementById('personaSelect');
+                sel.innerHTML = '';
+                stateData.personas.forEach((p, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = `[${i}] ${p}`;
+                    sel.appendChild(opt);
+                });
+                personasPopulated = true;
+            }
+
+            // Sync active persona index
+            if (stateData.current_persona_idx !== undefined) {
+                document.getElementById('personaSelect').value = stateData.current_persona_idx;
+                document.getElementById('personaIdxLabel').innerText = stateData.current_persona_idx;
+            }
+
+            // Sync sliders with server state if user is not actively dragging
+            if (!isDraggingSliders) {
+                if (stateData.orthogonal_push_weight !== undefined) {
+                    document.getElementById('pushSlider').value = stateData.orthogonal_push_weight;
+                    document.getElementById('pushVal').innerText = Number(stateData.orthogonal_push_weight).toFixed(2);
+                }
+                if (stateData.repulsion_strength !== undefined) {
+                    document.getElementById('repulsionSlider').value = stateData.repulsion_strength;
+                    document.getElementById('repulsionVal').innerText = Number(stateData.repulsion_strength).toFixed(1);
+                }
+                if (stateData.gold_threshold !== undefined) {
+                    document.getElementById('goldThreshSlider').value = stateData.gold_threshold;
+                    document.getElementById('goldThreshVal').innerText = Number(stateData.gold_threshold).toFixed(2);
+                }
+            }
 
             renderPCAChart();
             renderTelemetryChart();
             renderJournalFeed();
+            renderParetoFrontier();
             renderGoldVault();
         }
 
         function renderPCAChart() {
             const w = pcaCanvas.width;
             const h = pcaCanvas.height;
+            const dpr = window.devicePixelRatio;
             pcaCtx.clearRect(0, 0, w, h);
 
-            // Draw grid
-            pcaCtx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+            // Draw background grid
+            pcaCtx.strokeStyle = "rgba(255, 255, 255, 0.04)";
             pcaCtx.lineWidth = 1;
-            for (let x = 0; x < w; x += 40) {
+            for (let x = 0; x < w; x += 40 * dpr) {
                 pcaCtx.beginPath(); pcaCtx.moveTo(x, 0); pcaCtx.lineTo(x, h); pcaCtx.stroke();
             }
-            for (let y = 0; y < h; y += 40) {
+            for (let y = 0; y < h; y += 40 * dpr) {
                 pcaCtx.beginPath(); pcaCtx.moveTo(0, y); pcaCtx.lineTo(w, y); pcaCtx.stroke();
             }
 
             const coords = stateData.pca_coords || [];
+            mappedPCACoords = []; // reset for click & hover detection
             if (coords.length === 0) return;
 
-            // Map coords to canvas space
-            const margin = 50;
-            let minX = -1, maxX = 1, minY = -1, maxY = 1;
+            // Map coords to canvas space with bounds safety
+            const margin = 60 * dpr;
+            let minX = coords[0].x, maxX = coords[0].x, minY = coords[0].y, maxY = coords[0].y;
             coords.forEach(c => {
                 if (c.x < minX) minX = c.x;
                 if (c.x > maxX) maxX = c.x;
@@ -560,13 +1769,22 @@
                 if (c.y > maxY) maxY = c.y;
             });
 
-            function mapX(val) { return margin + (val - minX) / (maxX - minX || 1) * (w - 2 * margin); }
-            function mapY(val) { return margin + (val - minY) / (maxY - minY || 1) * (h - 2 * margin); }
+            const spanX = Math.max(maxX - minX, 0.4);
+            const spanY = Math.max(maxY - minY, 0.4);
+            const midX = (minX + maxX) / 2.0;
+            const midY = (minY + maxY) / 2.0;
+            const finalMinX = midX - spanX / 2.0;
+            const finalMaxX = midX + spanX / 2.0;
+            const finalMinY = midY - spanY / 2.0;
+            const finalMaxY = midY + spanY / 2.0;
+
+            function mapX(val) { return margin + (val - finalMinX) / spanX * (w - 2 * margin); }
+            function mapY(val) { return margin + (val - finalMinY) / spanY * (h - 2 * margin); }
 
             // Draw trajectory path
             pcaCtx.beginPath();
             pcaCtx.strokeStyle = "rgba(0, 240, 255, 0.35)";
-            pcaCtx.lineWidth = 2 * window.devicePixelRatio;
+            pcaCtx.lineWidth = 2 * dpr;
             coords.forEach((c, idx) => {
                 const cx = mapX(c.x), cy = mapY(c.y);
                 if (idx === 0) pcaCtx.moveTo(cx, cy);
@@ -574,49 +1792,68 @@
             });
             pcaCtx.stroke();
 
-            // Draw points
+            // Draw points and store for click/hover
             coords.forEach((c, idx) => {
                 const cx = mapX(c.x), cy = mapY(c.y);
+                const isLatest = (idx === coords.length - 1);
+
+                mappedPCACoords.push({ canvasX: cx, canvasY: cy, data: c, idx: idx });
+
                 pcaCtx.beginPath();
+                pcaCtx.shadowBlur = 0;
+                pcaCtx.shadowColor = "transparent";
+
                 if (c.is_gold) {
                     pcaCtx.fillStyle = "#FFC700";
-                    pcaCtx.arc(cx, cy, 7 * window.devicePixelRatio, 0, Math.PI * 2);
+                    pcaCtx.arc(cx, cy, 7.5 * dpr, 0, Math.PI * 2);
                     pcaCtx.shadowColor = "#FFC700";
-                    pcaCtx.shadowBlur = 15;
+                    pcaCtx.shadowBlur = 18;
+                } else if (isLatest) {
+                    pcaCtx.fillStyle = "#00F0FF";
+                    pcaCtx.arc(cx, cy, 6.5 * dpr, 0, Math.PI * 2);
+                    pcaCtx.shadowColor = "#00F0FF";
+                    pcaCtx.shadowBlur = 14;
                 } else {
-                    pcaCtx.fillStyle = idx === coords.length - 1 ? "#00F0FF" : "rgba(255, 255, 255, 0.5)";
-                    pcaCtx.arc(cx, cy, (idx === coords.length - 1 ? 6 : 3.5) * window.devicePixelRatio, 0, Math.PI * 2);
-                    pcaCtx.shadowBlur = 0;
+                    const age = 1 - (idx / coords.length);
+                    const alpha = 0.3 + age * 0.35;
+                    pcaCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    pcaCtx.arc(cx, cy, 3.8 * dpr, 0, Math.PI * 2);
                 }
                 pcaCtx.fill();
 
-                // Draw label for recent or gold points
-                if (c.is_gold || idx === coords.length - 1) {
+                // Draw label for gold or current point
+                if (c.is_gold || isLatest) {
+                    pcaCtx.shadowBlur = 0;
                     pcaCtx.fillStyle = c.is_gold ? "#FFC700" : "#00F0FF";
-                    pcaCtx.font = `${10 * window.devicePixelRatio}px 'JetBrains Mono'`;
-                    pcaCtx.fillText(`[Step ${c.step}] ${c.label ? c.label.substring(0, 18) : ''}`, cx + 8, cy - 8);
+                    pcaCtx.font = `${10 * dpr}px 'JetBrains Mono'`;
+                    pcaCtx.fillText(`[Step ${c.step}] ${c.label ? c.label.substring(0, 18) : ''}`, cx + 10 * dpr, cy - 10 * dpr);
                 }
             });
+
+            pcaCtx.shadowBlur = 0;
+            pcaCtx.shadowColor = "transparent";
         }
 
         function renderTelemetryChart() {
             const w = telemetryCanvas.width;
             const h = telemetryCanvas.height;
+            const dpr = window.devicePixelRatio;
             telemetryCtx.clearRect(0, 0, w, h);
 
             const history = stateData.telemetry_history || stateData.journal_history || [];
             if (history.length < 2) return;
 
-            const margin = 30;
+            const margin = 30 * dpr;
             const stepCount = history.length;
 
             function mapX(idx) { return margin + (idx / (stepCount - 1)) * (w - 2 * margin); }
             function mapY(val) { return h - margin - (val * (h - 2 * margin)); }
 
-            // Draw grid line at gold threshold (0.55)
-            const threshY = mapY(stateData.gold_threshold || 0.55);
-            telemetryCtx.strokeStyle = "rgba(255, 199, 0, 0.4)";
-            telemetryCtx.setLineDash([5, 5]);
+            // Draw Gold Threshold line (Yellow dashed)
+            const threshY = mapY(stateData.gold_threshold || 0.70);
+            telemetryCtx.strokeStyle = "rgba(255, 199, 0, 0.45)";
+            telemetryCtx.setLineDash([5 * dpr, 5 * dpr]);
+            telemetryCtx.lineWidth = 1.5 * dpr;
             telemetryCtx.beginPath();
             telemetryCtx.moveTo(margin, threshY);
             telemetryCtx.lineTo(w - margin, threshY);
@@ -626,7 +1863,7 @@
             // Draw Novelty Line (Cyan)
             telemetryCtx.beginPath();
             telemetryCtx.strokeStyle = "#00F0FF";
-            telemetryCtx.lineWidth = 2.5 * window.devicePixelRatio;
+            telemetryCtx.lineWidth = 2.5 * dpr;
             history.forEach((item, idx) => {
                 const cx = mapX(idx), cy = mapY(item.novelty_score || 0);
                 if (idx === 0) telemetryCtx.moveTo(cx, cy);
@@ -637,19 +1874,19 @@
             // Draw Coherence Line (Purple - normalized 0-1)
             telemetryCtx.beginPath();
             telemetryCtx.strokeStyle = "#9D00FF";
-            telemetryCtx.lineWidth = 2 * window.devicePixelRatio;
+            telemetryCtx.lineWidth = 2 * dpr;
             history.forEach((item, idx) => {
-                const score = (item.coherence_score || 5) / 10.0;
+                const score = (item.coherence_score !== null && item.coherence_score !== undefined) ? (item.coherence_score / 10.0) : 0.5;
                 const cx = mapX(idx), cy = mapY(score);
                 if (idx === 0) telemetryCtx.moveTo(cx, cy);
                 else telemetryCtx.lineTo(cx, cy);
             });
             telemetryCtx.stroke();
 
-            // Draw Cohomological Dim Line (Magenta #FF00E5 - normalized 0-1 via cd/5.0)
+            // Draw Cohomological Dim Line (Magenta - normalized 0-1 via cd/5.0)
             telemetryCtx.beginPath();
             telemetryCtx.strokeStyle = "#FF00E5";
-            telemetryCtx.lineWidth = 1.8 * window.devicePixelRatio;
+            telemetryCtx.lineWidth = 1.8 * dpr;
             history.forEach((item, idx) => {
                 const normCd = Math.min(1.0, (item.cohomological_dim || 1.0) / 5.0);
                 const cx = mapX(idx), cy = mapY(normCd);
@@ -662,16 +1899,60 @@
         function renderJournalFeed() {
             const feed = document.getElementById('journalFeed');
             const history = stateData.journal_history || [];
-            if (history.length === 0) return;
+            const countIndicator = document.getElementById('feedCountIndicator');
 
-            feed.innerHTML = history.slice().reverse().map(item => `
-                <div class="feed-entry ${item.is_gold ? 'gold-entry' : ''}">
+            if (history.length === 0) {
+                const emptyMsg = `<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem;">Waiting for expedition step telemetry...</div>`;
+                if (feed.innerHTML !== emptyMsg) feed.innerHTML = emptyMsg;
+                if (countIndicator) countIndicator.innerText = `0 entries`;
+                return;
+            }
+
+            // Filter history
+            let filtered = history.slice();
+
+            if (activeFilterPill === 'gold') {
+                filtered = filtered.filter(item => item.is_gold);
+            } else if (activeFilterPill === 'loops') {
+                filtered = filtered.filter(item => (item.b1 > 0 || item.b2 > 0));
+            } else if (activeFilterPill === 'warps') {
+                filtered = filtered.filter(item => item.leap_triggered);
+            }
+
+            if (feedSearchQuery.trim()) {
+                const q = feedSearchQuery.toLowerCase().trim();
+                filtered = filtered.filter(item => {
+                    return (item.location && item.location.toLowerCase().includes(q)) ||
+                           (item.response && item.response.toLowerCase().includes(q)) ||
+                           (item.persona && item.persona.toLowerCase().includes(q)) ||
+                           (item.session_source && item.session_source.toLowerCase().includes(q)) ||
+                           (item.next_location && item.next_location.toLowerCase().includes(q)) ||
+                           (`step ${item.step}`.includes(q));
+                });
+            }
+
+            if (countIndicator) {
+                countIndicator.innerText = `${filtered.length} / ${history.length} entries`;
+            }
+
+            if (filtered.length === 0) {
+                const emptyMsg = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem;">No entries match your search/filter criteria.</div>`;
+                if (feed.innerHTML !== emptyMsg) feed.innerHTML = emptyMsg;
+                return;
+            }
+
+            const newHtml = filtered.slice().reverse().map(item => `
+                <div class="feed-entry ${item.is_gold ? 'gold-entry' : ''}" style="cursor: pointer;" onclick="openNodeModal(${item.step})">
                     <div class="entry-header">
-                        <span>Step ${item.step} | ${item.location}</span>
-                        <span>Novelty: ${(item.novelty_score || 0).toFixed(2)} | Coh: ${item.coherence_score || '-'}/10</span>
+                        <span style="font-weight: 700; color: var(--accent-cyan);">Step ${item.step} | ${item.location}</span>
+                        <div style="display: flex; gap: 0.4rem; align-items: center;" onclick="event.stopPropagation();">
+                            <button class="btn-mini-copy" onclick="copyStepRaw(${item.step}, event)" title="Copy raw LLM output text">📋 Raw</button>
+                            <button class="btn-card-happy-social" onclick="copyStepSocial(${item.step}, event)" title="One-click copy formatted post for social feed!">😊 Copy Social Post</button>
+                        </div>
                     </div>
                     <div class="entry-text">${item.response}</div>
                     <div class="entry-tags">
+                        ${item.session_source ? `<span class="tag gold-tag" style="background: rgba(255, 199, 0, 0.12); border-color: var(--accent-gold); color: var(--accent-gold);">📂 ${item.session_source}</span>` : ''}
                         ${item.is_gold ? '<span class="tag gold-tag">🌟 GOLD VEIN</span>' : ''}
                         ${item.cohomological_dim ? `<span class="tag cyan-tag">cd: ${Number(item.cohomological_dim).toFixed(1)}</span>` : ''}
                         ${item.b1 > 0 ? `<span class="tag purple-tag">🌀 1-CYCLE LOOP</span>` : ''}
@@ -682,43 +1963,603 @@
                     </div>
                 </div>
             `).join('');
+
+            if (newHtml !== lastRenderedFeedHtml) {
+                if (isUserSelectingText()) {
+                    return; // Skip wiping DOM while user is actively highlighting text!
+                }
+                feed.innerHTML = newHtml;
+                lastRenderedFeedHtml = newHtml;
+            }
+        }
+
+        function renderParetoFrontier() {
+            const list = document.getElementById('paretoFrontierList');
+            const frontier = stateData.frontier_nodes || [];
+            if (frontier.length === 0) {
+                const emptyMsg = `<div style="color: var(--text-muted); font-size: 0.85rem;">Calculating Pareto optimal nodes...</div>`;
+                if (list.innerHTML !== emptyMsg) list.innerHTML = emptyMsg;
+                return;
+            }
+
+            const newHtml = frontier.map(node => `
+                <div style="background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.2); padding: 0.65rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;" class="pareto-card-item" onclick="openNodeModal(${node.step})">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                        <span style="color: var(--accent-cyan); font-weight: 700;">Step ${node.step}: ${node.concept}</span>
+                        <div style="display: flex; align-items: center; gap: 0.35rem;" onclick="event.stopPropagation();">
+                            <span style="font-family: 'JetBrains Mono'; color: var(--accent-gold); font-size: 0.75rem; margin-right: 0.2rem;">Nov: ${Number(node.novelty).toFixed(2)}</span>
+                            <button class="btn-mini-copy" onclick="copyStepRaw(${node.step}, event)">📋</button>
+                            <button class="btn-card-happy-social" onclick="copyStepSocial(${node.step}, event)">😊 Social</button>
+                        </div>
+                    </div>
+                    <div style="color: #CBD5E1; font-size: 0.78rem; line-height: 1.3;">${node.response}</div>
+                </div>
+            `).join('');
+
+            if (newHtml !== lastRenderedParetoHtml) {
+                if (isUserSelectingText()) return;
+                list.innerHTML = newHtml;
+                lastRenderedParetoHtml = newHtml;
+            }
         }
 
         function renderGoldVault() {
             const vault = document.getElementById('goldVaultList');
             const goldItems = stateData.gold_vault || [];
             if (goldItems.length === 0) {
-                vault.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">No gold veins discovered yet on this expedition.</div>`;
+                const emptyMsg = `<div style="color: var(--text-muted); font-size: 0.85rem;">No gold veins discovered yet on this expedition.</div>`;
+                if (vault.innerHTML !== emptyMsg) vault.innerHTML = emptyMsg;
                 return;
             }
 
-            vault.innerHTML = goldItems.map(g => `
-                <div style="background: rgba(255,199,0,0.06); border: 1px solid rgba(255,199,0,0.3); padding: 0.8rem; border-radius: 8px; font-size: 0.85rem;">
-                    <div style="color: var(--accent-gold); font-weight: 700; margin-bottom: 0.3rem;">Step ${g.step}: ${g.location}</div>
-                    <div style="color: #E2E8F0; line-height: 1.4;">"${g.response.substring(0, 140)}..."</div>
+            const newHtml = goldItems.map(g => `
+                <div style="background: rgba(255,199,0,0.06); border: 1px solid rgba(255,199,0,0.3); padding: 0.7rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;" class="vault-card-item" onclick="openNodeModal(${g.step})">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                        <span style="color: var(--accent-gold); font-weight: 700;">Step ${g.step}: ${g.location}</span>
+                        <div style="display: flex; gap: 0.35rem;" onclick="event.stopPropagation();">
+                            <button class="btn-mini-copy" onclick="copyStepRaw(${g.step}, event)">📋 Raw</button>
+                            <button class="btn-card-happy-social" onclick="copyStepSocial(${g.step}, event)">😊 Social Post</button>
+                        </div>
+                    </div>
+                    <div style="color: #E2E8F0; line-height: 1.4;">"${g.response.length > 140 ? g.response.substring(0, 140) + '...' : g.response}"</div>
                 </div>
             `).join('');
+
+            if (newHtml !== lastRenderedGoldHtml) {
+                if (isUserSelectingText()) return;
+                vault.innerHTML = newHtml;
+                lastRenderedGoldHtml = newHtml;
+            }
         }
 
-        // Control Button Handlers
+        // ---- Parameter Update Debouncer ----
+        function sendParamUpdate() {
+            clearTimeout(updateDebounceTimer);
+            updateDebounceTimer = setTimeout(async () => {
+                const payload = {
+                    action: "UPDATE_PARAMS",
+                    gold_threshold: parseFloat(document.getElementById('goldThreshSlider').value),
+                    orthogonal_push_weight: parseFloat(document.getElementById('pushSlider').value),
+                    repulsion_strength: parseFloat(document.getElementById('repulsionSlider').value)
+                };
+                try {
+                    await fetch('/api/control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (e) {
+                    console.error("Error posting param update:", e);
+                }
+            }, 150);
+        }
+
+        // ---- PCA Canvas Hover & Click ----
+        pcaCanvas.addEventListener('mousemove', (e) => {
+            const rect = pcaCanvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio;
+            const clickX = (e.clientX - rect.left) * dpr;
+            const clickY = (e.clientY - rect.top) * dpr;
+
+            const hitRadius = 14 * dpr;
+            let closestNode = null;
+            let closestDist = Infinity;
+
+            mappedPCACoords.forEach(mc => {
+                const dx = mc.canvasX - clickX;
+                const dy = mc.canvasY - clickY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < hitRadius && dist < closestDist) {
+                    closestDist = dist;
+                    closestNode = mc;
+                }
+            });
+
+            if (closestNode) {
+                pcaCanvas.style.cursor = 'pointer';
+                pcaTooltip.style.display = 'block';
+                pcaTooltip.style.left = `${e.clientX}px`;
+                pcaTooltip.style.top = `${e.clientY}px`;
+                const isGold = closestNode.data.is_gold;
+                pcaTooltip.innerHTML = `<strong>Step ${closestNode.data.step}</strong>: ${closestNode.data.label || 'Concept'} ${isGold ? '🌟 GOLD' : ''}`;
+            } else {
+                pcaCanvas.style.cursor = 'default';
+                pcaTooltip.style.display = 'none';
+            }
+        });
+
+        pcaCanvas.addEventListener('mouseleave', () => {
+            pcaTooltip.style.display = 'none';
+        });
+
+        pcaCanvas.addEventListener('click', (e) => {
+            const rect = pcaCanvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio;
+            const clickX = (e.clientX - rect.left) * dpr;
+            const clickY = (e.clientY - rect.top) * dpr;
+
+            const hitRadius = 14 * dpr;
+            let closestNode = null;
+            let closestDist = Infinity;
+
+            mappedPCACoords.forEach(mc => {
+                const dx = mc.canvasX - clickX;
+                const dy = mc.canvasY - clickY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < hitRadius && dist < closestDist) {
+                    closestDist = dist;
+                    closestNode = mc;
+                }
+            });
+
+            if (closestNode) {
+                openNodeModal(closestNode.data.step);
+            }
+        });
+
+        // ---- Node Detail Modal ----
+        async function openNodeModal(stepOrData) {
+            let stepNum = typeof stepOrData === 'object' ? stepOrData.step : stepOrData;
+            let stepData = journalStepMap.get(stepNum);
+
+            if (!stepData) {
+                try {
+                    const resp = await fetch(`/api/step?step=${stepNum}`);
+                    const fetched = await resp.json();
+                    if (fetched && !fetched.error) {
+                        stepData = fetched;
+                        journalStepMap.set(stepNum, fetched);
+                    }
+                } catch (e) {
+                    console.error("Error fetching step detail:", e);
+                }
+            }
+
+            if (!stepData) {
+                if (typeof stepOrData === 'object') {
+                    stepData = {
+                        step: stepOrData.step || 1,
+                        location: stepOrData.label || 'Concept',
+                        response: 'Full response text not available for this step.',
+                        is_gold: stepOrData.is_gold || false
+                    };
+                } else {
+                    return;
+                }
+            }
+
+            currentModalStep = stepData.step;
+
+            const modal = document.getElementById('nodeModal');
+            const isGold = stepData.is_gold;
+
+            document.getElementById('modalTitle').innerText = `🔍 Step ${stepData.step} — ${stepData.location || 'Concept'}`;
+            document.getElementById('modalSubtitle').innerText = `🔭 Lens: ${stepData.persona || 'Lateral Thinking Lens'} | Temp: ${stepData.temperature ? Number(stepData.temperature).toFixed(2) : '0.85'}`;
+
+            const novelty = stepData.novelty_score !== undefined ? Number(stepData.novelty_score).toFixed(3) : '0.000';
+            const coherence = stepData.coherence_score !== null && stepData.coherence_score !== undefined ? stepData.coherence_score : '—';
+            const cd = stepData.cohomological_dim ? Number(stepData.cohomological_dim).toFixed(2) : '1.00';
+            const b1 = stepData.b1 !== undefined ? stepData.b1 : 0;
+            const b2 = stepData.b2 !== undefined ? stepData.b2 : 0;
+
+            let classBadge = '🪨 Standard Terrain';
+            let classColor = 'var(--text-muted)';
+            if (isGold) {
+                classBadge = '🌟 GOLD VEIN';
+                classColor = 'var(--accent-gold)';
+            } else if (stepData.coherence_score !== null && stepData.coherence_score < 7 && stepData.novelty_score > 0.7) {
+                classBadge = '🗑️ Fool\'s Gold';
+                classColor = 'var(--accent-red)';
+            }
+
+            document.getElementById('modalMetrics').innerHTML = `
+                <div class="modal-metric">
+                    <div class="modal-metric-val" style="color: var(--accent-cyan);">${novelty}</div>
+                    <div class="modal-metric-label">KDE Novelty</div>
+                </div>
+                <div class="modal-metric">
+                    <div class="modal-metric-val" style="color: var(--accent-purple);">${coherence}/10</div>
+                    <div class="modal-metric-label">Coherence</div>
+                </div>
+                <div class="modal-metric">
+                    <div class="modal-metric-val" style="color: var(--accent-magenta);">${cd}</div>
+                    <div class="modal-metric-label">Cohom Dim</div>
+                </div>
+                <div class="modal-metric">
+                    <div class="modal-metric-val" style="color: var(--accent-purple);">${b1}</div>
+                    <div class="modal-metric-label">b₁ Loops</div>
+                </div>
+                <div class="modal-metric">
+                    <div class="modal-metric-val" style="color: var(--accent-magenta);">${b2}</div>
+                    <div class="modal-metric-label">b₂ Voids</div>
+                </div>
+                <div class="modal-metric">
+                    <div class="modal-metric-val" style="color: ${classColor}; font-size: 0.9rem;">${classBadge}</div>
+                    <div class="modal-metric-label">Classification</div>
+                </div>
+            `;
+
+            document.getElementById('modalBody').innerText = stepData.response || 'No response text stored.';
+            document.getElementById('modalNextTarget').innerText = stepData.next_location || 'Uncharted Space';
+
+            // Modal Prev/Next Step Navigation
+            const maxStep = stateData ? (stateData.current_step || journalStepMap.size) : journalStepMap.size;
+            const btnPrev = document.getElementById('btnModalPrev');
+            const btnNext = document.getElementById('btnModalNext');
+
+            btnPrev.disabled = (currentModalStep <= 1);
+            btnNext.disabled = (currentModalStep >= maxStep);
+
+            document.getElementById('btnModalCopyRaw').onclick = () => {
+                copyToClipboard(stepData.response, `Copied Step ${stepData.step} raw response! 📋`, isGold);
+            };
+
+            document.getElementById('btnModalCopySocial').onclick = () => {
+                const post = formatSocialPost(stepData);
+                copyToClipboard(post, `Copied Step ${stepData.step} social post snippet! 😊`, isGold);
+            };
+
+            modal.classList.add('active');
+        }
+
+        document.getElementById('btnModalPrev').addEventListener('click', () => {
+            if (currentModalStep > 1) {
+                openNodeModal(currentModalStep - 1);
+            }
+        });
+
+        document.getElementById('btnModalNext').addEventListener('click', () => {
+            const maxStep = stateData ? (stateData.current_step || journalStepMap.size) : journalStepMap.size;
+            if (currentModalStep < maxStep) {
+                openNodeModal(currentModalStep + 1);
+            }
+        });
+
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('nodeModal').classList.remove('active');
+        });
+
+        document.getElementById('nodeModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('nodeModal')) {
+                document.getElementById('nodeModal').classList.remove('active');
+            }
+        });
+
+        // Search & Filter Event Handlers
+        document.getElementById('journalSearchInput').addEventListener('input', (e) => {
+            feedSearchQuery = e.target.value;
+            renderJournalFeed();
+        });
+
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                e.target.classList.add('active');
+                activeFilterPill = e.target.getAttribute('data-filter');
+                renderJournalFeed();
+            });
+        });
+
+        document.getElementById('btnCopyAllGold').addEventListener('click', copyAllGold);
+        document.getElementById('btnCopyCompletionDigest').addEventListener('click', copyFullResearchDigest);
+
+        // ---- Highlight / Text Selection Floating Happy Face Pop-up ----
+        document.addEventListener('mouseup', handleTextSelection);
+        document.addEventListener('keyup', handleTextSelection);
+        document.addEventListener('selectionchange', () => {
+            requestAnimationFrame(() => handleTextSelection(null));
+        });
+
+        function handleTextSelection(e) {
+            const popup = document.getElementById('selectionPopup');
+            if (!popup) return;
+
+            const selection = window.getSelection();
+            const text = selection ? selection.toString().trim() : '';
+
+            const isClickingPopup = e && e.target && e.target.closest && e.target.closest('#selectionPopup');
+            if (isClickingPopup) return;
+
+            if (text.length >= 2) {
+                if (selection.rangeCount === 0) return;
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                if (rect.width > 0 || rect.height > 0) {
+                    popup.style.display = 'block';
+                    const leftPos = Math.max(10, Math.min(window.innerWidth - 220, rect.left + (rect.width / 2) - 100));
+                    const topPos = Math.max(10, rect.top - 48);
+                    
+                    popup.style.left = `${leftPos}px`;
+                    popup.style.top = `${topPos}px`;
+
+                    document.getElementById('btnCopySelectionSocial').onclick = (evt) => {
+                        evt.stopPropagation();
+                        evt.preventDefault();
+                        const snippet = `💡 Latent Discovery Fragment:\n\n"${text}"\n\n😊 #IndianaJones #AIExploration #LatentSpace`;
+                        copyToClipboard(snippet, "Copied highlighted fragment for social feed! 😊", true);
+                        popup.style.display = 'none';
+                        window.getSelection().removeAllRanges();
+                        isSelectingOrInteracting = false;
+                    };
+                }
+            } else if (!isClickingPopup) {
+                popup.style.display = 'none';
+            }
+        }
+
+        // ---- Control Button Handlers ----
+        document.getElementById('btnRestart').addEventListener('click', async () => {
+            if (confirm("Restart expedition from starting concept with current setpoints?")) {
+                personasPopulated = false;
+                await fetch('/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: "RESTART" })
+                });
+                fetchState();
+            }
+        });
+
+        document.getElementById('btnTogglePause').addEventListener('click', async () => {
+            await fetch('/api/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "TOGGLE_PAUSE" })
+            });
+            fetchState();
+        });
+
         document.getElementById('btnWarp').addEventListener('click', async () => {
             await fetch('/api/control', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: "FORCE_WARP" })
             });
-            alert("🌀 Quantum Vector Warp signal transmitted!");
         });
 
-        document.getElementById('pushSlider').addEventListener('input', (e) => {
-            document.getElementById('pushVal').innerText = e.target.value;
+        // ---- Concept Teleportation ----
+        document.getElementById('btnTeleport').addEventListener('click', async () => {
+            const input = document.getElementById('teleportInput');
+            const concept = input.value.trim();
+            if (!concept) return;
+            
+            await fetch('/api/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "TELEPORT_CONCEPT", target_concept: concept })
+            });
+            input.value = '';
+            fetchState();
         });
-        document.getElementById('repulsionSlider').addEventListener('input', (e) => {
-            document.getElementById('repulsionVal').innerText = e.target.value;
+
+        document.getElementById('teleportInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('btnTeleport').click();
+            }
         });
-        document.getElementById('goldThreshSlider').addEventListener('input', (e) => {
-            document.getElementById('goldThreshVal').innerText = e.target.value;
+
+        // ---- Persona Lens Selector ----
+        document.getElementById('personaSelect').addEventListener('change', async (e) => {
+            const idx = parseInt(e.target.value);
+            document.getElementById('personaIdxLabel').innerText = idx;
+            await fetch('/api/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "SET_PERSONA", persona_idx: idx })
+            });
+            fetchState();
         });
+
+        // ---- Export Journal ----
+        document.getElementById('btnExport').addEventListener('click', () => {
+            if (!stateData) return;
+            const blob = new Blob([JSON.stringify(stateData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `expedition_journal_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // ---- Slider Event Listeners ----
+        ['pushSlider', 'repulsionSlider', 'goldThreshSlider'].forEach(id => {
+            const slider = document.getElementById(id);
+            slider.addEventListener('mousedown', () => { isDraggingSliders = true; });
+            slider.addEventListener('touchstart', () => { isDraggingSliders = true; });
+            slider.addEventListener('mouseup', () => { isDraggingSliders = false; sendParamUpdate(); });
+            slider.addEventListener('touchend', () => { isDraggingSliders = false; sendParamUpdate(); });
+            
+            slider.addEventListener('input', (e) => {
+                if (id === 'pushSlider') document.getElementById('pushVal').innerText = Number(e.target.value).toFixed(2);
+                if (id === 'repulsionSlider') document.getElementById('repulsionVal').innerText = Number(e.target.value).toFixed(1);
+                if (id === 'goldThreshSlider') document.getElementById('goldThreshVal').innerText = Number(e.target.value).toFixed(2);
+                sendParamUpdate();
+            });
+        });
+
+        // ---- Keyboard Shortcuts ----
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('nodeModal');
+            if (!modal.classList.contains('active')) return;
+
+            if (e.key === 'Escape') {
+                modal.classList.remove('active');
+            } else if (e.key === 'ArrowLeft') {
+                if (currentModalStep > 1) openNodeModal(currentModalStep - 1);
+            } else if (e.key === 'ArrowRight') {
+                const maxStep = stateData ? (stateData.current_step || journalStepMap.size) : journalStepMap.size;
+                if (currentModalStep < maxStep) openNodeModal(currentModalStep + 1);
+            }
+        });
+
+        // ---- Historical Archive Explorer Logic ----
+        async function fetchAvailableJournals() {
+            const listContainer = document.getElementById('archiveJournalsList');
+            const badge = document.getElementById('archiveCountBadge');
+            try {
+                const resp = await fetch('/api/journals');
+                const data = await resp.json();
+                const journals = data.journals || [];
+                
+                if (badge) badge.innerText = `${journals.length} sessions discovered`;
+
+                if (journals.length === 0) {
+                    listContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1.5rem;">No saved journal files found in workspace root. Upload a local JSON file above!</div>`;
+                    return;
+                }
+
+                listContainer.innerHTML = journals.map(item => `
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; transition: all 0.2s;" class="archive-item-card">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 700; color: var(--accent-gold); font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${item.starting_concept}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; font-family: 'JetBrains Mono', monospace;">
+                                📄 ${item.filename} | 📍 ${item.step_count} Steps | 💾 ${item.size_kb} KB | 🕒 ${item.modified_time}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
+                            <button class="btn-card-happy-social" onclick="loadJournalServer('${item.filename}', 'replace')" title="View this historical session in dashboard">
+                                <span>👁️ Load Session</span>
+                            </button>
+                            <button class="btn-mini-copy" style="background: rgba(0, 240, 255, 0.12); border-color: var(--accent-cyan); color: var(--accent-cyan); padding: 0.35rem 0.65rem;" onclick="loadJournalServer('${item.filename}', 'merge')" title="Merge into active stream to search accumulated latent space">
+                                <span>➕ Merge Stream</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Failed to fetch available journals:", err);
+                if (listContainer) {
+                    listContainer.innerHTML = `<div style="color: var(--accent-red); font-size: 0.85rem; text-align: center; padding: 1.5rem;">Failed to connect to journal archive server.</div>`;
+                }
+            }
+        }
+
+        async function loadJournalServer(filename, mode = 'replace') {
+            try {
+                const resp = await fetch('/api/load_journal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename, mode })
+                });
+                const res = await resp.json();
+                if (res.status === 'ok') {
+                    showToast(`Loaded ${res.loaded_count} steps from ${filename} (${mode === 'merge' ? 'merged' : 'replaced'})! 😊`);
+                    document.getElementById('archiveModal').classList.remove('active');
+                    lastStateFingerprint = ''; // force re-render
+                    fetchState();
+                } else {
+                    alert(`Error loading journal: ${res.error || 'Unknown error'}`);
+                }
+            } catch (err) {
+                alert(`Failed to load journal file: ${err.message}`);
+            }
+        }
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const parsedData = JSON.parse(e.target.result);
+                    const resp = await fetch('/api/load_journal', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            custom_json: parsedData,
+                            filename: file.name,
+                            mode: 'replace'
+                        })
+                    });
+                    const res = await resp.json();
+                    if (res.status === 'ok') {
+                        showToast(`Uploaded and loaded ${res.loaded_count} steps from ${file.name}! 😊`);
+                        document.getElementById('archiveModal').classList.remove('active');
+                        lastStateFingerprint = '';
+                        fetchState();
+                    } else {
+                        alert(`Error loading uploaded file: ${res.error}`);
+                    }
+                } catch (err) {
+                    alert(`Invalid JSON file format: ${err.message}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetToLiveRun() {
+            if (confirm("Restore active live stream state?")) {
+                lastStateFingerprint = '';
+                document.getElementById('archiveModal').classList.remove('active');
+                fetchState();
+            }
+        }
+
+        // Archive Modal Event Listeners
+        const btnOpenArchive = document.getElementById('btnOpenArchive');
+        const btnStreamArchive = document.getElementById('btnStreamArchive');
+        const archiveModal = document.getElementById('archiveModal');
+        const archiveModalClose = document.getElementById('archiveModalClose');
+        const journalFileInput = document.getElementById('journalFileInput');
+
+        if (btnOpenArchive) {
+            btnOpenArchive.addEventListener('click', () => {
+                archiveModal.classList.add('active');
+                fetchAvailableJournals();
+            });
+        }
+
+        if (btnStreamArchive) {
+            btnStreamArchive.addEventListener('click', () => {
+                archiveModal.classList.add('active');
+                fetchAvailableJournals();
+            });
+        }
+
+        if (archiveModalClose) {
+            archiveModalClose.addEventListener('click', () => {
+                archiveModal.classList.remove('active');
+            });
+        }
+
+        if (archiveModal) {
+            archiveModal.addEventListener('click', (e) => {
+                if (e.target === archiveModal) {
+                    archiveModal.classList.remove('active');
+                }
+            });
+        }
+
+        if (journalFileInput) {
+            journalFileInput.addEventListener('change', handleFileUpload);
+        }
     </script>
 </body>
 </html>

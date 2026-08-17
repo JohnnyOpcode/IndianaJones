@@ -89,15 +89,35 @@ class LatentExplorer:
             "Bioluminescent Philology"
         ]
         self.current_persona_idx = 0
+        self.restart_requested = False
 
         # Start live web dashboard
         if DASHBOARD_AVAILABLE and config.enable_dashboard:
             GLOBAL_STATE.status = "EXPEDITION_RUNNING"
             GLOBAL_STATE.starting_concept = config.starting_concept
             GLOBAL_STATE.current_location = config.starting_concept
+            GLOBAL_STATE.set_personas(self.personas)
             start_server_in_thread(config.port)
 
         print(f"📍 Dropping into High-Dimensional Latent Space at: '{self.current_location}'\n")
+
+    def reset_expedition_state(self):
+        print("\n🔄 RESTARTING EXPEDITION FROM STARTING CONCEPT...")
+        self.journal_texts.clear()
+        self.journal_embeddings.clear()
+        self.gold_vault.clear()
+        self.gold_embeddings.clear()
+        self.roadtrip_log.clear()
+        self.energy_level = 100
+        self.current_location = self.starting_concept
+        self.low_novelty_streak = 0
+        self.current_persona_idx = 0
+        self.graph_engine = ExpeditionGraph()
+        self.novelty_engine = NoveltyEngine(bandwidth=0.35, decay_factor=0.97, max_history=150)
+        self.cohomology_engine = CohomologyEngine(max_points=25, eps_percentile=50)
+        self.restart_requested = True
+        if DASHBOARD_AVAILABLE and self.config.enable_dashboard:
+            GLOBAL_STATE.reset_expedition()
 
     def get_current_persona(self):
         return self.personas[self.current_persona_idx % len(self.personas)]
@@ -242,12 +262,69 @@ class LatentExplorer:
     def check_web_dashboard_commands(self):
         if not DASHBOARD_AVAILABLE or not self.config.enable_dashboard:
             return
+        
+        # Process any pending commands
         cmds = GLOBAL_STATE.pop_commands()
         for cmd in cmds:
             action = cmd.get("action")
             if action == "FORCE_WARP":
                 print("⚡ MANUAL QUANTUM WARP TRIGGERED VIA DASHBOARD!")
                 self.low_novelty_streak = 3
+            elif action == "RESTART":
+                self.reset_expedition_state()
+            elif action == "TELEPORT_CONCEPT":
+                target = cmd.get("target_concept", "").strip()
+                if target:
+                    print(f"🚀 CONCEPT TELEPORTATION VIA DASHBOARD → '{target}'")
+                    self.current_location = target
+                    self.low_novelty_streak = 0
+            elif action == "SET_PERSONA":
+                idx = int(cmd.get("persona_idx", self.current_persona_idx))
+                if 0 <= idx < len(self.personas):
+                    self.current_persona_idx = idx
+                    print(f"🔭 Persona Lens switched to: '{self.personas[idx]}'")
+            elif action == "UPDATE_PARAMS":
+                if "gold_threshold" in cmd:
+                    self.gold_threshold = float(cmd["gold_threshold"])
+                    print(f"🎛️ Dynamic Gold Threshold updated to {self.gold_threshold:.2f}")
+                if "orthogonal_push_weight" in cmd:
+                    self.orthogonal_push_weight = float(cmd["orthogonal_push_weight"])
+                    print(f"🎛️ Dynamic Push Weight updated to {self.orthogonal_push_weight:.2f}")
+                if "repulsion_strength" in cmd:
+                    self.repulsion_processor.penalty = float(cmd["repulsion_strength"])
+                    print(f"🎛️ Dynamic Repulsion Penalty updated to {self.repulsion_processor.penalty:.1f}")
+                if "temperature" in cmd:
+                    self.current_temperature = float(cmd["temperature"])
+                    print(f"🎛️ Dynamic Temperature updated to {self.current_temperature:.2f}")
+
+        # Always sync current runtime state back to GLOBAL_STATE
+        with GLOBAL_STATE.lock:
+            self.gold_threshold = GLOBAL_STATE.gold_threshold
+            self.orthogonal_push_weight = GLOBAL_STATE.orthogonal_push_weight
+            self.repulsion_processor.penalty = GLOBAL_STATE.repulsion_strength
+
+        # Handle pause state cleanly
+        while GLOBAL_STATE.status == "PAUSED":
+            time.sleep(0.5)
+            # Check for resume or parameter updates while paused
+            pause_cmds = GLOBAL_STATE.pop_commands()
+            for cmd in pause_cmds:
+                action = cmd.get("action")
+                if action == "RESUME":
+                    print("▶️ Expedition resumed via dashboard.")
+                    break
+                elif action == "RESTART":
+                    self.reset_expedition_state()
+                    break
+                elif action == "UPDATE_PARAMS":
+                    if "gold_threshold" in cmd:
+                        self.gold_threshold = float(cmd["gold_threshold"])
+                    if "orthogonal_push_weight" in cmd:
+                        self.orthogonal_push_weight = float(cmd["orthogonal_push_weight"])
+                    if "repulsion_strength" in cmd:
+                        self.repulsion_processor.penalty = float(cmd["repulsion_strength"])
+                    if "temperature" in cmd:
+                        self.current_temperature = float(cmd["temperature"])
 
     def make_camp(self):
         print("\n⛺ ENERGY DEPLETED. Setting up camp.")
@@ -297,11 +374,21 @@ class LatentExplorer:
             GLOBAL_STATE.total_steps = steps
             GLOBAL_STATE.gold_threshold = gold_threshold
 
-        for step in range(1, steps + 1):
+        step = 1
+        while step <= steps:
+            if self.restart_requested:
+                self.restart_requested = False
+                step = 1
+
             if self.energy_level <= 0:
                 self.make_camp()
 
             self.check_web_dashboard_commands()
+            if self.restart_requested:
+                self.restart_requested = False
+                step = 1
+                continue
+
             self.update_repulsion_list()
 
             print(f"\n--- 🥾 Step {step}/{steps} | Location: '{self.current_location}' | Lens: {self.get_current_persona()} ---")
@@ -330,7 +417,7 @@ class LatentExplorer:
             novelty_score, vec = self.novelty_engine.evaluate_novelty(
                 response, vec, self.journal_embeddings, self.journal_texts, cohom_novelty=cohom_data["cohomological_novelty"]
             )
-            print(f"📊 Multi-Scale KDE + Cohomological Novelty Score: {novelty_score:.2f} (Target > {gold_threshold})")
+            print(f"📊 Multi-Scale KDE + Cohomological Novelty Score: {novelty_score:.2f} (Target > {self.gold_threshold:.2f})")
             
             # Temperature Adjustment
             if novelty_score < 0.35:
@@ -350,7 +437,7 @@ class LatentExplorer:
             is_gold = False
 
             # Gold Appraisal
-            if novelty_score > gold_threshold:
+            if novelty_score > self.gold_threshold:
                 print("🧐 Appraising coherence & conceptual depth...")
                 coherence_score = self.evaluate_coherence(response)
                 print(f"⚖️  Coherence Score: {coherence_score}/10")
@@ -409,7 +496,7 @@ class LatentExplorer:
                 components = VectorSteering.compute_pca_subspace(self.journal_embeddings)
                 raw_seed_vec = self.compass.encode([raw_next_location])[0]
                 ortho_vec = VectorSteering.orthogonal_projection(raw_seed_vec, components)
-                ortho_vec = VectorSteering.topological_steering(ortho_vec, cohom_data, push_weight=0.7)
+                ortho_vec = VectorSteering.topological_steering(ortho_vec, cohom_data, push_weight=self.orthogonal_push_weight)
                 
                 next_location = f"{base_concept} orthogonally shifted through {self.get_current_persona()}"
                 print(f"🌀 Warping along Topological Cohomological Vector to: '{next_location}'")
@@ -455,6 +542,7 @@ class LatentExplorer:
 
             self.current_location = next_location
             self.energy_level -= 34
+            step += 1
 
         print("\n==================================")
         print("🏆 EXPEDITION COMPLETE 🏆")
@@ -466,3 +554,18 @@ class LatentExplorer:
             GLOBAL_STATE.status = "COMPLETED"
 
         self.save_journal_to_json()
+
+        if DASHBOARD_AVAILABLE and self.config.enable_dashboard:
+            print(f"\n🖥️  Expedition complete. Web Dashboard remaining live at http://localhost:{self.config.port}")
+            print("Press Ctrl+C to exit dashboard server.")
+            try:
+                while True:
+                    time.sleep(1)
+                    cmds = GLOBAL_STATE.pop_commands()
+                    for cmd in cmds:
+                        if cmd.get("action") == "RESTART":
+                            self.reset_expedition_state()
+                            self.start_expedition(steps, self.gold_threshold)
+                            return
+            except KeyboardInterrupt:
+                print("\n👋 Server stopped.")
