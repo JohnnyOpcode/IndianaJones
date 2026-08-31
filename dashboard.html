@@ -274,7 +274,7 @@
         .metric-val.cyan { color: var(--accent-cyan); text-shadow: 0 0 12px var(--accent-cyan-glow); }
         .metric-val.purple { color: var(--accent-purple); }
 
-        /* ---- PCA Canvas ---- */
+        /* ---- PCA Canvas & 3D Topology Tabs ---- */
         #pcaCanvas {
             width: 100%;
             height: 380px;
@@ -282,6 +282,151 @@
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             cursor: crosshair;
+        }
+
+        .pca-tabs {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pca-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 11px;
+            border-radius: 6px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.2s ease;
+        }
+
+        .pca-tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .pca-tab-btn.active {
+            background: rgba(0, 240, 255, 0.18);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .pca-3d-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+        }
+
+        .pca-ctrl-select {
+            background: rgba(10, 15, 28, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--text-main);
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .pca-ctrl-select:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .pca-ctrl-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s;
+        }
+
+        .pca-ctrl-btn:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: rgba(0, 240, 255, 0.4);
+            color: var(--accent-cyan);
+        }
+
+        .pca-ctrl-btn.active {
+            background: rgba(255, 199, 0, 0.2);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            box-shadow: 0 0 8px var(--accent-gold-glow);
+        }
+
+        /* 3D Canvas Container & HUD */
+        #pca3dContainer {
+            width: 100%;
+            height: 380px;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(4, 6, 12, 0.88);
+        }
+
+        #pca3dCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+        }
+
+        #pca3dCanvas:active {
+            cursor: grabbing;
+        }
+
+        .pca-3d-hud {
+            position: absolute;
+            bottom: 8px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .pca-3d-hud-left {
+            background: rgba(6, 10, 22, 0.82);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(6px);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .pca-3d-hud-right {
+            background: rgba(6, 10, 22, 0.82);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(6px);
+            color: rgba(0, 240, 255, 0.85);
         }
 
         /* ---- Telemetry Charts ---- */
@@ -972,6 +1117,179 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* ---- Latent Space Mining Hover Tooltip ---- */
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(0, 240, 255, 0.12);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            color: var(--accent-cyan);
+            font-size: 0.64rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            cursor: help;
+            margin-left: 0.35rem;
+            vertical-align: middle;
+            transition: all 0.2s ease;
+            user-select: none;
+            position: relative;
+            z-index: 2;
+        }
+        .info-icon:hover {
+            background: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 12px var(--accent-cyan-glow);
+            transform: scale(1.22);
+            color: #FFF;
+        }
+        .info-icon.gold {
+            background: rgba(255, 199, 0, 0.15);
+            border-color: rgba(255, 199, 0, 0.4);
+            color: var(--accent-gold);
+        }
+        .info-icon.gold:hover {
+            background: rgba(255, 199, 0, 0.45);
+            box-shadow: 0 0 12px var(--accent-gold-glow);
+        }
+        .info-icon.purple {
+            background: rgba(157, 0, 255, 0.15);
+            border-color: rgba(157, 0, 255, 0.4);
+            color: #D699FF;
+        }
+        .info-icon.purple:hover {
+            background: rgba(157, 0, 255, 0.45);
+            box-shadow: 0 0 12px rgba(157, 0, 255, 0.7);
+        }
+        .info-icon-mini {
+            width: 13px;
+            height: 13px;
+            font-size: 0.54rem;
+            margin-left: 0.25rem;
+        }
+
+        .mining-tooltip-popover {
+            position: fixed;
+            z-index: 999999;
+            pointer-events: none;
+            max-width: 320px;
+            background: rgba(10, 15, 28, 0.96);
+            border: 1.5px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 240, 255, 0.2);
+            backdrop-filter: blur(16px);
+            display: none;
+            font-family: 'Outfit', sans-serif;
+            animation: tooltipIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes tooltipIn {
+            from { opacity: 0; transform: translateY(6px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .mining-tooltip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 0.5rem;
+        }
+
+        .mining-tooltip-title {
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .mining-tooltip-badge {
+            font-size: 0.62rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            background: rgba(0, 240, 255, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            white-space: nowrap;
+        }
+
+        .mining-tooltip-badge.gold {
+            background: rgba(255, 199, 0, 0.15);
+            color: var(--accent-gold);
+            border-color: rgba(255, 199, 0, 0.3);
+        }
+
+        .mining-tooltip-badge.purple {
+            background: rgba(157, 0, 255, 0.15);
+            color: #D699FF;
+            border-color: rgba(157, 0, 255, 0.3);
+        }
+
+        .mining-tooltip-body {
+            font-size: 0.8rem;
+            line-height: 1.45;
+            color: #C8D3E0;
+            margin-bottom: 0.45rem;
+        }
+
+        .mining-tooltip-takeaway {
+            font-size: 0.72rem;
+            color: var(--accent-gold);
+            background: rgba(255, 199, 0, 0.08);
+            padding: 0.35rem 0.55rem;
+            border-radius: 6px;
+            border-left: 2px solid var(--accent-gold);
+            line-height: 1.35;
+        }
+
+        /* ---- Field Guide Modal Cards ---- */
+        .guide-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        @media (max-width: 768px) {
+            .guide-grid { grid-template-columns: 1fr; }
+        }
+        .guide-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            transition: all 0.2s;
+        }
+        .guide-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        .guide-card-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        .guide-card-desc {
+            font-size: 0.82rem;
+            color: #C8D3E0;
+            line-height: 1.5;
+        }
+
         /* ---- PCA Hover Tooltip ---- */
         .pca-tooltip {
             position: fixed;
@@ -1035,27 +1353,31 @@
             <span class="brand-icon">🗺️</span>
             <div>
                 <div class="brand-title">INDIANA JONES</div>
-                <div class="brand-subtitle">Latent Space Vector Explorer v2.2</div>
+                <div class="brand-subtitle">Latent Space Explorer v2.2</div>
             </div>
         </div>
         <div class="header-controls">
-            <button class="btn-header" id="btnOpenArchive" style="background: rgba(255, 199, 0, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);">
+            <button class="btn-header" id="btnOpenGuide" style="background: rgba(0, 240, 255, 0.12); border-color: var(--accent-cyan); color: var(--accent-cyan);" data-tt-title="Field Guide 101" data-tt-category="Primer" data-tt-desc="Opens the interactive Latent Space Mining Field Guide explaining vector traversal, topological simplicial complexes, and how Indiana Jones discovers conceptual gold." data-tt-tip="Click to view the 4-step Latent Space Mining primer.">
+                <span>📖</span>
+                <span>Field Guide</span>
+            </button>
+            <button class="btn-header" id="btnOpenArchive" style="background: rgba(255, 199, 0, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" data-tt-title="Expedition Archives" data-tt-category="Historical Vault" data-tt-desc="Browse, load, and compare saved expedition journal files (.json) from past mining runs or merge multiple expeditions to search the combined latent space." data-tt-tip="Load previous exploration runs without restarting the server.">
                 <span>📂</span>
                 <span>Archive Sessions</span>
             </button>
-            <button class="btn-header export" id="btnExport">
+            <button class="btn-header export" id="btnExport" data-tt-title="Export Journal" data-tt-category="Data Export" data-tt-desc="Downloads the complete expedition journal as a structured JSON file containing all step embeddings, topological invariants, Pareto frontier points, and Gold Vault discoveries." data-tt-tip="Exports entire session for downstream analysis or visualization.">
                 <span>📥</span>
                 <span>Export Journal</span>
             </button>
-            <button class="btn-header restart" id="btnRestart">
+            <button class="btn-header restart" id="btnRestart" data-tt-title="Restart Expedition" data-tt-category="Lifecycle" data-tt-desc="Resets the trajectory memory and restarts exploration from the initial seed concept." data-tt-tip="Clears current path to explore a new direction.">
                 <span>🔄</span>
                 <span>Restart Expedition</span>
             </button>
-            <button class="btn-header" id="btnTogglePause">
+            <button class="btn-header" id="btnTogglePause" data-tt-title="Pause / Resume" data-tt-category="Lifecycle" data-tt-desc="Temporarily pauses the background exploration loop to allow deep inspection of nodes, sliders, or prompt adjustments." data-tt-tip="Pause anytime to interactively adjust parameters.">
                 <span id="pauseIcon">⏸️</span>
                 <span id="pauseBtnText">Pause Expedition</span>
             </button>
-            <div class="expedition-status-pill" id="statusPill">
+            <div class="expedition-status-pill" id="statusPill" data-tt-title="Expedition Status" data-tt-category="Runtime" data-tt-desc="Indicates the current operational state of the latent exploration loop: LIVE ACTIVE (running), PAUSED (frozen for inspection), or COMPLETE (milestone achieved)." data-tt-tip="Real-time heartbeat of the background LLM miner.">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">LIVE EXPEDITION ACTIVE</span>
             </div>
@@ -1084,54 +1406,120 @@
             
             <!-- Top Telemetry Cards -->
             <div class="metrics-bar">
-                <div class="metric-tile">
-                    <span class="metric-label">Current Step</span>
+                <div class="metric-tile" data-tt-title="Current Trajectory Step" data-tt-category="Traversal" data-tt-desc="The sequential hop count through high-dimensional latent space. On each step, Indiana Jones prompts the LLM under active steering constraints, embeds the output into 384-D vector space, evaluates cosine KDE density, and updates the Vietoris-Rips topological complex." data-tt-tip="Each step pushes the frontier deeper into unexplored conceptual territory.">
+                    <span class="metric-label">Current Step <span class="info-icon">ℹ</span></span>
                     <span class="metric-val cyan" id="metricStep">0/100</span>
                 </div>
-                <div class="metric-tile">
-                    <span class="metric-label">Gold Veins</span>
+                <div class="metric-tile" data-tt-title="Veins of Gold" data-tt-category="Discovery" data-tt-desc="Groundbreaking conceptual insights that score in the elite tier for both high Cosine KDE Novelty (rare and isolated in latent space) and high Coherence (logically sound, structured, and non-trivial). Automatically appraised and archived into the Gold Vault." data-tt-tip="The primary goal of the expedition is discovering dense, high-value Gold Veins.">
+                    <span class="metric-label">Gold Veins <span class="info-icon gold">★</span></span>
                     <span class="metric-val gold" id="metricGold">0</span>
                 </div>
-                <div class="metric-tile">
-                    <span class="metric-label">Cohomological Dim (cd)</span>
+                <div class="metric-tile" data-tt-title="Cohomological Dimension (cd)" data-tt-category="Topology" data-tt-desc="Measures the topological complexity and effective spatial dimensionality spanned by the trajectory's Vietoris-Rips simplicial complex (C₀, C₁, C₂, C₃). Higher dimension indicates cross-cutting conceptual breadth across multidisciplinary domains." data-tt-tip="High cd means exploration is branching broadly across multi-dimensional semantic space.">
+                    <span class="metric-label">Cohom Dim (cd) <span class="info-icon">ℹ</span></span>
                     <span class="metric-val cyan" id="metricCohomDim">1.00</span>
                 </div>
-                <div class="metric-tile">
-                    <span class="metric-label">Betti 1-Loops / 2-Voids</span>
+                <div class="metric-tile" data-tt-title="Betti 1-Loops (b₁) & 2-Voids (b₂)" data-tt-category="Topology" data-tt-desc="Exact simplicial Betti numbers: b₁ counts 1-cycle loops (where reasoning circles back to previous themes). b₂ counts 2-void cavities (hollow conceptual regions surrounded by connected ideas). Harmonic steering pushes away from b₁ loops and pulls into b₂ void centroids." data-tt-tip="b₁ > 0 triggers Loop Repulsion; b₂ > 0 triggers Void Attraction.">
+                    <span class="metric-label">Betti Loops/Voids <span class="info-icon purple">ℹ</span></span>
                     <span class="metric-val purple" id="metricBetti">b₁:0 | b₂:0</span>
                 </div>
-                <div class="metric-tile">
-                    <span class="metric-label">Sheaf Obstruction (Ω)</span>
+                <div class="metric-tile" data-tt-title="Sheaf Obstruction (Ω)" data-tt-category="Topology" data-tt-desc="Calculates the local-to-global coboundary section gluing obstruction across multi-perspective embeddings. Quantifies the structural tension when attempting to reconcile disparate disciplinary lenses into a unified global truth." data-tt-tip="High obstruction signals profound cross-disciplinary conceptual tension.">
+                    <span class="metric-label">Sheaf Obstruction <span class="info-icon purple">ℹ</span></span>
                     <span class="metric-val" style="color: var(--accent-magenta);" id="metricSheaf">0.000</span>
                 </div>
-                <div class="metric-tile">
-                    <span class="metric-label">Active Temperature</span>
+                <div class="metric-tile" data-tt-title="Dynamic LLM Temperature" data-tt-category="Sampling" data-tt-desc="The current sampling randomness of the LLM. Automatically self-regulates: heats up (up to 1.25) during repetitive plateaus to inject entropy and force novel leaps, and cools down (down to 0.65) when striking novel gold to crystallize coherent reasoning." data-tt-tip="Auto-regulates entropy based on real-time topological and novelty feedback.">
+                    <span class="metric-label">Temperature <span class="info-icon purple">ℹ</span></span>
                     <span class="metric-val purple" id="metricTemp">0.85</span>
                 </div>
-                <div class="metric-tile">
-                    <span class="metric-label">Explorer Energy</span>
+                <div class="metric-tile" data-tt-title="Explorer Stamina & Camp" data-tt-category="Lifecycle" data-tt-desc="Simulates expedition endurance. Each step consumes stamina. When energy reaches 0%, the explorer establishes camp to synthesize a high-level scientific summary of recent milestones, consolidate findings, and reset exploration vectors." data-tt-tip="Camp synthesis prevents cognitive drift across long 100+ step expeditions.">
+                    <span class="metric-label">Explorer Energy <span class="info-icon">ℹ</span></span>
                     <span class="metric-val" style="color: var(--accent-green);" id="metricEnergy">100%</span>
                 </div>
             </div>
 
-            <!-- 2D PCA Latent Space Visualization -->
-            <div class="card">
+            <!-- Latent Space Geometry & 3D Visual Topology Surface Card -->
+            <div class="card" id="pcaMainCard" data-tt-title="Latent Space Geometry & 3D Visual Topology Surface" data-tt-category="Latent Geometry" data-tt-desc="Multi-dimensional visualization of the latent space journey. Switch between 2D Principal Trajectory and 3D Visual Topology Surface to observe potential basins, novelty peaks, and high-dimensional manifolds." data-tt-tip="In 3D mode: Drag with mouse to orbit/rotate the 3D topology terrain, scroll to zoom, and hover over 3D nodes to inspect discovered concepts.">
                 <div class="card-header">
-                    <div class="card-title">🌐 High-Dimensional Latent Trajectory (2D PCA Vector Push)</div>
-                    <span class="tag cyan-tag" id="activePersona">Lens: Initializing...</span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <div class="card-title">
+                            <span>🌐 Latent Space Trajectory &amp; Topology</span>
+                            <span class="info-icon">ℹ</span>
+                        </div>
+                        <!-- View Mode Tabs -->
+                        <div class="pca-tabs">
+                            <button type="button" class="pca-tab-btn active" id="tabPca2D" onclick="switchPcaView('2d')">
+                                <span>🌐 2D Trajectory</span>
+                            </button>
+                            <button type="button" class="pca-tab-btn" id="tabPca3D" onclick="switchPcaView('3d')">
+                                <span>🏔️ 3D Topology Surface</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3D Specific Quick Controls (visible when 3D tab is active) -->
+                    <div class="pca-3d-controls" id="pca3DControls" style="display: none;">
+                        <select class="pca-ctrl-select" id="pca3DModeSelect" onchange="on3DModeChange()" data-tt-title="3D Topology Style" data-tt-category="Visuals" data-tt-desc="Choose how the 3D latent topology is rendered." data-tt-tip="Surface Mesh shows continuous elevation gradients; Wireframe gives a cyber grid.">
+                            <option value="surface">Shaded Surface + Path</option>
+                            <option value="wireframe">Cyber Wireframe Terrain</option>
+                            <option value="manifold">Iso-Novelty Manifold</option>
+                            <option value="scatter">3D Vector Scatter Cloud</option>
+                        </select>
+                        <select class="pca-ctrl-select" id="pca3DMetricSelect" onchange="on3DMetricChange()" data-tt-title="Z-Axis Elevation Metric" data-tt-category="Mathematics" data-tt-desc="Determines what high-dimensional metric governs the vertical topological peaks and valleys." data-tt-tip="Novelty Potential elevates rare concepts as mountain summits.">
+                            <option value="novelty">Z: Novelty Potential (KDE)</option>
+                            <option value="pca_z">Z: 3rd Principal Component</option>
+                            <option value="cohomology">Z: Cohomological Dim</option>
+                            <option value="coherence">Z: Semantic Coherence</option>
+                        </select>
+                        <div class="pca-ctrl-btn-group" style="display: inline-flex; gap: 2px;">
+                            <button type="button" class="pca-ctrl-btn" onclick="set3DPreset('iso')" title="Isometric 3D Perspective (45° / 30°)">🎲 3D</button>
+                            <button type="button" class="pca-ctrl-btn" onclick="set3DPreset('top')" title="Top-Down Plan View (PCA 1 vs PCA 2)">📐 Top</button>
+                            <button type="button" class="pca-ctrl-btn" onclick="set3DPreset('side')" title="Side Profile View (PCA 1 vs Z-Metric)">📐 Side</button>
+                            <button type="button" class="pca-ctrl-btn" onclick="set3DPreset('front')" title="Front Cross-Section (PCA 2 vs Z-Metric)">📐 Front</button>
+                        </div>
+                        <button type="button" class="pca-ctrl-btn" id="btnAutoRotate" onclick="toggle3DAutoRotate()" title="Toggle Cinematic Auto-Orbit">
+                            <span id="rotateIcon">▶️</span> Auto-Orbit
+                        </button>
+                        <button type="button" class="pca-ctrl-btn" onclick="reset3DCamera()" title="Reset Camera Angle & Zoom">
+                            🔄 Reset
+                        </button>
+                    </div>
+
+                    <span class="tag cyan-tag" id="activePersona" data-tt-title="Active Persona Lens" data-tt-category="Steering" data-tt-desc="The active specialized disciplinary lens currently filtering the generative LLM prompt." data-tt-tip="Cycles across 16 multidisciplinary scientific lenses.">Lens: Initializing...</span>
                 </div>
+
+                <!-- 2D Canvas View -->
                 <canvas id="pcaCanvas"></canvas>
+
+                <!-- 3D Canvas View Container -->
+                <div id="pca3dContainer" style="display: none;">
+                    <canvas id="pca3dCanvas"></canvas>
+                    <div class="pca-3d-hud">
+                        <div class="pca-3d-hud-left">
+                            <span id="hudActiveCombo" style="color: var(--accent-cyan); font-weight: 700;">Surface · Novelty</span>
+                            <span id="hudMetricStats" style="color: rgba(255, 255, 255, 0.65);">Range: 0.00 – 1.00</span>
+                            <span id="hudAzimuth">Yaw: 45°</span>
+                            <span id="hudElevation">Pitch: 32°</span>
+                            <span id="hudZoom">Zoom: 1.0x</span>
+                            <span id="hudPoints">Points: 0</span>
+                        </div>
+                        <div class="pca-3d-hud-right">
+                            <span>🖱️ Drag to Orbit · Scroll to Zoom · Click Node for Details</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Realtime Telemetry Charts -->
-            <div class="card">
+            <div class="card" data-tt-title="Multi-Stream Telemetry Time Series" data-tt-category="Telemetry" data-tt-desc="Real-time multi-objective telemetry: Cyan line tracks Cosine KDE Novelty; Purple line tracks Semantic Coherence (1-10); Magenta tracks Cohomological Dimension; Dashed Gold line marks the active Gold Threshold." data-tt-tip="Spikes above the dashed gold line trigger instant gold vein appraisal.">
                 <div class="card-header">
-                    <div class="card-title">📈 Real-Time Telemetry (KDE Novelty vs. Coherence)</div>
+                    <div class="card-title">
+                        <span>📈 Real-Time Telemetry (KDE Novelty vs. Coherence)</span>
+                        <span class="info-icon">ℹ</span>
+                    </div>
                     <div class="chart-legend">
-                        <div class="legend-item"><div class="legend-line" style="background: #00F0FF;"></div><span>KDE Novelty</span></div>
-                        <div class="legend-item"><div class="legend-line" style="background: #9D00FF;"></div><span>Coherence</span></div>
-                        <div class="legend-item"><div class="legend-line" style="background: #FF00E5;"></div><span>Cohom Dim</span></div>
-                        <div class="legend-item"><div class="legend-line" style="background: #FFC700; border-top: 2px dashed #FFC700; height: 0;"></div><span>Gold Threshold</span></div>
+                        <div class="legend-item" data-tt-title="KDE Novelty (Cyan)" data-tt-category="Metric" data-tt-desc="Multi-scale Cosine Kernel Density Estimation score (0 to 1). Evaluates how rare and unvisited the current embedding is relative to all past history." data-tt-tip="High values (>0.70) indicate semantic departures."><div class="legend-line" style="background: #00F0FF;"></div><span>KDE Novelty</span></div>
+                        <div class="legend-item" data-tt-title="Coherence (Purple)" data-tt-category="Metric" data-tt-desc="Multi-factor evaluation (1 to 10) combining domain semantic alignment with structural depth to ensure ideas remain insightful and rigorous." data-tt-tip="Ensures the model doesn't hallucinate nonsensical buzzwords."><div class="legend-line" style="background: #9D00FF;"></div><span>Coherence</span></div>
+                        <div class="legend-item" data-tt-title="Cohomological Dim (Magenta)" data-tt-category="Metric" data-tt-desc="Effective spatial topological dimension (1.0 to 3.0) computed over local simplicial complexes." data-tt-tip="Tracks multi-directional conceptual breadth."><div class="legend-line" style="background: #FF00E5;"></div><span>Cohom Dim</span></div>
+                        <div class="legend-item" data-tt-title="Gold Threshold (Dashed Gold)" data-tt-category="Threshold" data-tt-desc="The active cutoff threshold. Concepts with novelty exceeding this line undergo deep coherence validation for Gold Vault entry." data-tt-tip="Adjustable in real-time via the sidebar slider."><div class="legend-line" style="background: #FFC700; border-top: 2px dashed #FFC700; height: 0;"></div><span>Gold Threshold</span></div>
                     </div>
                 </div>
                 <div class="chart-container">
@@ -1142,17 +1530,20 @@
             <!-- Real-Time Expedition Stream / Journal Feed -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">📜 Real-Time Expedition Stream</div>
+                    <div class="card-title">
+                        <span>📜 Real-Time Expedition Stream</span>
+                        <span class="info-icon">ℹ</span>
+                    </div>
                     <span style="font-size: 0.78rem; color: var(--text-muted);" id="feedCountIndicator">0 entries</span>
                 </div>
                 <div class="feed-controls">
-                    <input type="text" class="feed-search-input" id="journalSearchInput" placeholder="🔍 Search responses, concepts, lenses, historical sessions...">
+                    <input type="text" class="feed-search-input" id="journalSearchInput" placeholder="🔍 Search responses, concepts, lenses, historical sessions..." data-tt-title="Stream Search" data-tt-category="Search" data-tt-desc="Instant fuzzy search across all generated responses, extracted concepts, and disciplinary lenses in the active or loaded journal." data-tt-tip="Type keywords like 'entropy', 'cellular', or 'quantum' to filter.">
                     <div class="filter-pills">
-                        <button class="filter-pill active" data-filter="all">All</button>
-                        <button class="filter-pill gold" data-filter="gold">🌟 Gold Only</button>
-                        <button class="filter-pill" data-filter="loops">🌀 Loops/Voids</button>
-                        <button class="filter-pill" data-filter="warps">⚡ Warps</button>
-                        <button class="filter-pill gold" id="btnStreamArchive" style="margin-left: 0.4rem; font-weight: 700;" title="Load historical expedition JSONs into stream">📂 Load Journal JSONs</button>
+                        <button class="filter-pill active" data-filter="all" data-tt-title="Filter: All Steps" data-tt-category="Filter" data-tt-desc="Displays all exploration steps in chronological order." data-tt-tip="Show complete expedition stream.">All</button>
+                        <button class="filter-pill gold" data-filter="gold" data-tt-title="Filter: Gold Only" data-tt-category="Filter" data-tt-desc="Filters stream to display only verified high-value Veins of Gold." data-tt-tip="Showcase elite breakthrough discoveries only.">🌟 Gold Only</button>
+                        <button class="filter-pill" data-filter="loops" data-tt-title="Filter: Loops/Voids" data-tt-category="Filter" data-tt-desc="Filters stream to steps where topological 1-cycle loops or 2-void cavities were detected." data-tt-tip="Inspect topological anomalies and harmonic pushes.">🌀 Loops/Voids</button>
+                        <button class="filter-pill" data-filter="warps" data-tt-title="Filter: Warps" data-tt-category="Filter" data-tt-desc="Filters stream to steps where Quantum Vector Warps and Pareto jumps occurred." data-tt-tip="View major trajectory disruptions.">⚡ Warps</button>
+                        <button class="filter-pill gold" id="btnStreamArchive" style="margin-left: 0.4rem; font-weight: 700;" title="Load historical expedition JSONs into stream" data-tt-title="Load Historical JSONs" data-tt-category="Vault" data-tt-desc="Quickly open and load past expedition JSON files into the active search feed." data-tt-tip="Browse and merge archived exploration runs.">📂 Load Journal JSONs</button>
                     </div>
                 </div>
                 <div class="journal-feed" id="journalFeed">
@@ -1168,9 +1559,12 @@
         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             
             <!-- Active Concept Coordinates -->
-            <div class="card">
+            <div class="card" data-tt-title="Active Conceptual Vector Anchor" data-tt-category="State" data-tt-desc="The current semantic coordinate and noun-phrase concept in latent space acting as the seed anchor for the next step's traversal. Grounded to maintain domain coherence while steering into unmapped frontiers." data-tt-tip="Derived dynamically from the latest steered orthogonal projection.">
                 <div class="card-header">
-                    <div class="card-title">📍 Active Concept Coordinates</div>
+                    <div class="card-title">
+                        <span>📍 Active Concept Coordinates</span>
+                        <span class="info-icon">ℹ</span>
+                    </div>
                 </div>
                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; color: var(--accent-cyan); word-break: break-word; background: rgba(0,240,255,0.05); padding: 0.85rem; border-radius: 8px; border: 1px solid rgba(0,240,255,0.2);" id="activeLocation">
                     Initializing Dropping Point...
@@ -1180,19 +1574,22 @@
             <!-- Concept Teleportation & Persona Lens -->
             <div class="card control-panel">
                 <div class="card-header">
-                    <div class="card-title">🚀 Concept Teleportation & Persona Lens</div>
+                    <div class="card-title">
+                        <span>🚀 Concept Teleportation & Lens</span>
+                        <span class="info-icon">ℹ</span>
+                    </div>
                 </div>
 
-                <div class="slider-label">
-                    <span>Drop Explorer at Custom Concept</span>
+                <div class="slider-label" data-tt-title="Latent Concept Teleporter" data-tt-category="Manual Control" data-tt-desc="Allows research operators to manually drop the explorer into an arbitrary semantic location, instantly redirecting the search trajectory to a fresh domain." data-tt-tip="Type any seed (e.g. 'Bioluminescent Fungi Networks') and click Drop Here.">
+                    <span>Drop Explorer at Custom Concept <span class="info-icon">ℹ</span></span>
                 </div>
                 <div class="teleport-group">
                     <input type="text" class="teleport-input" id="teleportInput" placeholder="e.g. Bioluminescent Fungi Networks" maxlength="120">
-                    <button class="btn-teleport" id="btnTeleport">🚀 Drop Here</button>
+                    <button class="btn-teleport" id="btnTeleport" data-tt-title="Teleport Vector" data-tt-category="Action" data-tt-desc="Instantly injects the input concept into the explorer's active state and encodes its embedding." data-tt-tip="Triggers an immediate conceptual leap.">🚀 Drop Here</button>
                 </div>
 
-                <div class="slider-label" style="margin-top: 0.3rem;">
-                    <span>Active Persona Lens</span>
+                <div class="slider-label" style="margin-top: 0.3rem;" data-tt-title="Active Persona Lens Selector" data-tt-category="Steering" data-tt-desc="Forces the LLM to analyze the concept through specialized scientific frameworks (e.g. Systems Biology, Information Theory, Nonlinear Dynamics, Category Theory). Rotates automatically or can be pinned manually." data-tt-tip="Forces lateral thinking by cross-pollinating disparate academic fields.">
+                    <span>Active Persona Lens <span class="info-icon purple">ℹ</span></span>
                     <span id="personaIdxLabel" style="color: var(--accent-purple);">0</span>
                 </div>
                 <select class="persona-select" id="personaSelect">
@@ -1203,32 +1600,35 @@
             <!-- Steering & Vector Controls -->
             <div class="card control-panel">
                 <div class="card-header">
-                    <div class="card-title">⚡ Steering Vector Controls</div>
+                    <div class="card-title">
+                        <span>⚡ Steering Vector Controls</span>
+                        <span class="info-icon">ℹ</span>
+                    </div>
                 </div>
                 
-                <button class="btn btn-gold" id="btnWarp">
+                <button class="btn btn-gold" id="btnWarp" data-tt-title="Force Quantum Vector Warp" data-tt-category="Action" data-tt-desc="Emergency escape mechanism for low-novelty plateaus. Immediately backtracks to the highest-scoring Pareto frontier node and projects search vectors orthogonal to all recent history." data-tt-tip="Click to instantly break out of repetitive semantic ruts.">
                     <span>🌀 Force Quantum Vector Warp</span>
                 </button>
 
-                <div class="slider-group">
+                <div class="slider-group" data-tt-title="Orthogonal Push Weight" data-tt-category="Vector Steering" data-tt-desc="Controls the geometric force (0.0 to 1.0) applied to project search vectors perpendicular to the principal subspace of visited embeddings, forcing the explorer into unmapped dimensions." data-tt-tip="Higher values enforce aggressive departure from explored themes.">
                     <div class="slider-label">
-                        <span>Orthogonal Push Weight</span>
+                        <span>Orthogonal Push Weight <span class="info-icon">ℹ</span></span>
                         <span id="pushVal">0.70</span>
                     </div>
                     <input type="range" id="pushSlider" min="0" max="1" step="0.05" value="0.70">
                 </div>
 
-                <div class="slider-group">
+                <div class="slider-group" data-tt-title="Logit Repulsion Penalty" data-tt-category="Sampling" data-tt-desc="Adjusts the logit penalty subtracted directly from overused AI buzzwords and clichés (e.g., 'tapestry', 'cathedral', 'whisper', 'fabric', 'dance') in the LLM's probability distribution." data-tt-tip="Suppresses repetitive LLM prose tropes at the token generation level.">
                     <div class="slider-label">
-                        <span>Logit Repulsion Penalty</span>
+                        <span>Logit Repulsion Penalty <span class="info-icon">ℹ</span></span>
                         <span id="repulsionVal">5.0</span>
                     </div>
                     <input type="range" id="repulsionSlider" min="0" max="15" step="0.5" value="5.0">
                 </div>
 
-                <div class="slider-group">
+                <div class="slider-group" data-tt-title="Gold Discovery Threshold" data-tt-category="Appraisal" data-tt-desc="The minimum novelty score (0.30 - 0.95) required to trigger full multi-factor coherence evaluation and archive the insight into the Gold Vault." data-tt-tip="Lower to capture more candidate insights; raise for only elite breakthroughs.">
                     <div class="slider-label">
-                        <span>Gold Threshold</span>
+                        <span>Gold Threshold <span class="info-icon gold">★</span></span>
                         <span id="goldThreshVal">0.70</span>
                     </div>
                     <input type="range" id="goldThreshSlider" min="0.3" max="0.95" step="0.02" value="0.70">
@@ -1236,34 +1636,40 @@
             </div>
 
             <!-- Topological Void & Loop Radar -->
-            <div class="card">
+            <div class="card" data-tt-title="Topological Invariant Radar" data-tt-category="Homology" data-tt-desc="Real-time readouts of topological invariants: 1-cycle loops (b₁), 2-void cavities (b₂), Sheaf obstruction (Ω), and Cohomological Dimension (cd) computed over the Vietoris-Rips simplicial complex." data-tt-tip="Visual summary of topological features shaping search vectors.">
                 <div class="card-header">
-                    <div class="card-title">🔬 Topological Radar</div>
+                    <div class="card-title">
+                        <span>🔬 Topological Radar</span>
+                        <span class="info-icon purple">ℹ</span>
+                    </div>
                 </div>
                 <div class="topology-radar">
-                    <div class="radar-cell" id="radarB1Cell">
+                    <div class="radar-cell" id="radarB1Cell" data-tt-title="b₁ 1-Cycle Loops" data-tt-category="Topology" data-tt-desc="Counts closed 1-cycles in latent space where ideas loop back onto previous themes. When b₁ > 0, Harmonic Loop Repulsion triggers to push the explorer outward." data-tt-tip="Indicates the LLM is circling back on similar ideas.">
                         <span class="radar-val" style="color: var(--accent-purple);" id="radarB1">0</span>
-                        <span class="radar-label">b₁ 1-Cycle Loops</span>
+                        <span class="radar-label">b₁ Loops <span class="info-icon info-icon-mini purple">ℹ</span></span>
                     </div>
-                    <div class="radar-cell" id="radarB2Cell">
+                    <div class="radar-cell" id="radarB2Cell" data-tt-title="b₂ 2-Void Cavities" data-tt-category="Topology" data-tt-desc="Counts hollow 2-dimensional cavities enclosed by triangular 2-simplices. Represents unvisited conceptual syntheses surrounded by related ideas." data-tt-tip="Attracts exploration into the void centroid.">
                         <span class="radar-val" style="color: var(--accent-magenta);" id="radarB2">0</span>
-                        <span class="radar-label">b₂ 2-Void Cavities</span>
+                        <span class="radar-label">b₂ Voids <span class="info-icon info-icon-mini purple">ℹ</span></span>
                     </div>
-                    <div class="radar-cell" id="radarSheafCell">
+                    <div class="radar-cell" id="radarSheafCell" data-tt-title="Sheaf Obstruction Ω" data-tt-category="Topology" data-tt-desc="Coboundary inconsistency measuring how difficult it is to glue local multidisciplinary perspectives into a global truth. High values reward rich, complex topics." data-tt-tip="Measures deep structural conceptual tension.">
                         <span class="radar-val" style="color: var(--accent-red);" id="radarSheaf">0.000</span>
-                        <span class="radar-label">Sheaf Obstruction Ω</span>
+                        <span class="radar-label">Sheaf Ω <span class="info-icon info-icon-mini purple">ℹ</span></span>
                     </div>
-                    <div class="radar-cell" id="radarCdCell">
+                    <div class="radar-cell" id="radarCdCell" data-tt-title="Cohomological Dimension" data-tt-category="Topology" data-tt-desc="Effective topological dimension spanned by the trajectory's Vietoris-Rips complex (1.0 to 3.0)." data-tt-tip="Higher dimension indicates broader multi-perspective coverage.">
                         <span class="radar-val" style="color: var(--accent-cyan);" id="radarCd">1.00</span>
-                        <span class="radar-label">Cohomological Dim</span>
+                        <span class="radar-label">Cohom Dim <span class="info-icon info-icon-mini">ℹ</span></span>
                     </div>
                 </div>
             </div>
 
             <!-- Pareto Frontier Nodes -->
-            <div class="card">
+            <div class="card" data-tt-title="Pareto Optimal Frontier" data-tt-category="Multi-Objective" data-tt-desc="The non-dominated set of discoveries where no other step achieves both higher Novelty AND higher Coherence simultaneously. Serves as the optimal anchor points for quantum backtracking." data-tt-tip="The mathematical cream-of-the-crop representing ideal novelty-rigor trade-offs.">
                 <div class="card-header">
-                    <div class="card-title">🏆 Pareto Frontier Trajectory</div>
+                    <div class="card-title">
+                        <span>🏆 Pareto Frontier Trajectory</span>
+                        <span class="info-icon">ℹ</span>
+                    </div>
                 </div>
                 <div id="paretoFrontierList" class="vault-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 240px; overflow-y: auto;">
                     <div style="color: var(--text-muted); font-size: 0.85rem;">Calculating Pareto optimal nodes...</div>
@@ -1271,10 +1677,13 @@
             </div>
 
             <!-- Gold Vault Summary -->
-            <div class="card">
+            <div class="card" data-tt-title="Gold Vault Repository" data-tt-category="Archive" data-tt-desc="The permanent showcase of all verified breakthrough discoveries found across the expedition, formatted for instant research review, text copying, or social feed sharing." data-tt-tip="Click any entry to inspect full context or copy to clipboard.">
                 <div class="card-header">
-                    <div class="card-title">💎 Gold Vault Highlights</div>
-                    <button class="btn-mini-copy btn-mini-social" id="btnCopyAllGold">😊 Copy Thread</button>
+                    <div class="card-title">
+                        <span>💎 Gold Vault Highlights</span>
+                        <span class="info-icon gold">★</span>
+                    </div>
+                    <button class="btn-mini-copy btn-mini-social" id="btnCopyAllGold" data-tt-title="Copy Entire Gold Vault" data-tt-category="Share" data-tt-desc="Formats all discovered Gold Veins into a structured social thread and copies it to your clipboard." data-tt-tip="Perfect for sharing discoveries on social media.">😊 Copy Thread</button>
                 </div>
                 <div id="goldVaultList" class="vault-list" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 300px; overflow-y: auto;">
                     <div style="color: var(--text-muted); font-size: 0.85rem;">No gold veins discovered yet on this expedition.</div>
@@ -1319,6 +1728,71 @@
                     <button class="modal-nav-btn" id="btnModalPrev">← Prev Step</button>
                     <button class="modal-nav-btn" id="btnModalNext">Next Step →</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latent Space Mining Field Guide 101 Modal -->
+    <div class="modal-overlay" id="guideModal">
+        <div class="modal-card" style="max-width: 860px; width: 94%;">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+                        <span>📖</span> Latent Space Mining: Field Guide 101
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        How Indiana Jones traverses high-dimensional neural representations to find groundbreaking conceptual gold.
+                    </div>
+                </div>
+                <button class="modal-close" id="guideModalClose">✕</button>
+            </div>
+
+            <div class="guide-grid">
+                <!-- Card 1 -->
+                <div class="guide-card">
+                    <div class="guide-card-title">
+                        <span>🌌</span> 1. What is Latent Space Mining?
+                    </div>
+                    <div class="guide-card-desc">
+                        Large Language Models map human knowledge into high-dimensional geometric embedding spaces (384-D+). Typical prompting only visits common semantic centers. <strong>Indiana Jones</strong> operates as an autonomous vector miner, continuously navigating the vast uncharted conceptual territory between standard answers.
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="guide-card">
+                    <div class="guide-card-title">
+                        <span>📐</span> 2. Topological Data Analysis (TDA)
+                    </div>
+                    <div class="guide-card-desc">
+                        As the explorer hops across concepts, it constructs <strong>Vietoris-Rips Simplicial Complexes</strong> (C₀..C₃). 
+                        <strong>b₁ Betti loops</strong> detect circular thematic echo chambers (triggering loop repulsion); 
+                        <strong>b₂ 2-voids</strong> identify unvisited conceptual centers; and <strong>Sheaf Obstruction (Ω)</strong> measures cross-disciplinary gluing tension.
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="guide-card">
+                    <div class="guide-card-title">
+                        <span>🧭</span> 3. Vector Steering & Logit Repulsion
+                    </div>
+                    <div class="guide-card-desc">
+                        To break out of repetitive AI tropes, <strong>PCA Subspace Steering</strong> projects candidate vectors perpendicular to recent history. Simultaneously, a dynamic byte-level <strong>Logit Repulsion Processor</strong> penalizes cliché buzzwords (<em>"tapestry"</em>, <em>"cathedral"</em>, <em>"whisper"</em>) directly in the LLM's probability distribution.
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="guide-card">
+                    <div class="guide-card-title">
+                        <span>🏆</span> 4. Pareto Frontier & Veins of Gold
+                    </div>
+                    <div class="guide-card-desc">
+                        Pure novelty without rigor creates hallucinated gibberish. Indiana Jones computes <strong>Multi-Objective Pareto Optimization</strong> (Novelty × Coherence). Discoveries that achieve non-dominated balance are appraised as <strong>Veins of Gold</strong>, saved to the Gold Vault, and used as anchors for quantum backtracking.
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 10px; padding: 0.85rem 1.1rem; font-size: 0.82rem; color: #DCE3ED; margin-top: 0.5rem; line-height: 1.5;">
+                <span style="color: var(--accent-gold); font-weight: 700;">💡 Pro Tip for Researchers:</span> Hover over any metric, chart, radar cell, or control slider on the dashboard to view live explanations and mathematical definitions.
             </div>
         </div>
     </div>
@@ -1382,21 +1856,1217 @@
     <!-- Floating PCA Tooltip -->
     <div class="pca-tooltip" id="pcaTooltip"></div>
 
+    <!-- Floating Latent Mining Smart Tooltip Popover -->
+    <div class="mining-tooltip-popover" id="miningTooltip">
+        <div class="mining-tooltip-header">
+            <span class="mining-tooltip-title" id="mttTitle">Concept Explanation</span>
+            <span class="mining-tooltip-badge" id="mttBadge">Topology</span>
+        </div>
+        <div class="mining-tooltip-body" id="mttDesc">Detailed explanation text...</div>
+        <div class="mining-tooltip-takeaway" id="mttTip">💡 Takeaway insight...</div>
+    </div>
+
     <script>
         const pcaCanvas = document.getElementById('pcaCanvas');
         const pcaCtx = pcaCanvas.getContext('2d');
+        const pca3dCanvas = document.getElementById('pca3dCanvas');
+        const pca3dCtx = pca3dCanvas ? pca3dCanvas.getContext('2d') : null;
         const telemetryCanvas = document.getElementById('telemetryCanvas');
         const telemetryCtx = telemetryCanvas.getContext('2d');
         const pcaTooltip = document.getElementById('pcaTooltip');
 
+        let currentPcaView = '2d'; // '2d' or '3d'
+        let pca3DMode = 'surface'; // 'surface', 'wireframe', 'manifold', 'scatter'
+        let pca3DMetric = 'novelty'; // 'novelty', 'pca_z', 'cohomology', 'coherence'
+        let topology3DEngine = null;
+
         function resizeCanvases() {
-            pcaCanvas.width = pcaCanvas.offsetWidth * window.devicePixelRatio;
-            pcaCanvas.height = pcaCanvas.offsetHeight * window.devicePixelRatio;
-            telemetryCanvas.width = telemetryCanvas.offsetWidth * window.devicePixelRatio;
-            telemetryCanvas.height = telemetryCanvas.offsetHeight * window.devicePixelRatio;
+            const dpr = window.devicePixelRatio || 1;
+            const parentCard = document.getElementById('pcaMainCard');
+            
+            let targetWidth = 0;
+            if (parentCard) {
+                const style = window.getComputedStyle(parentCard);
+                const padLeft = parseFloat(style.paddingLeft) || 16;
+                const padRight = parseFloat(style.paddingRight) || 16;
+                targetWidth = parentCard.clientWidth - (padLeft + padRight);
+            }
+            if (!targetWidth || targetWidth < 200) {
+                targetWidth = Math.max(300, (window.innerWidth ? Math.min(window.innerWidth - 60, 1200) : 800));
+            }
+            const targetHeight = 380;
+
+            if (pcaCanvas) {
+                pcaCanvas.width = Math.round(targetWidth * dpr);
+                pcaCanvas.height = Math.round(targetHeight * dpr);
+            }
+            if (pca3dCanvas) {
+                pca3dCanvas.width = Math.round(targetWidth * dpr);
+                pca3dCanvas.height = Math.round(targetHeight * dpr);
+            }
+            if (telemetryCanvas) {
+                const telCard = telemetryCanvas.closest('.card');
+                let telWidth = targetWidth;
+                if (telCard) {
+                    const style = window.getComputedStyle(telCard);
+                    const pl = parseFloat(style.paddingLeft) || 16;
+                    const pr = parseFloat(style.paddingRight) || 16;
+                    telWidth = telCard.clientWidth - (pl + pr);
+                }
+                telemetryCanvas.width = Math.round(telWidth * dpr);
+                telemetryCanvas.height = Math.round(200 * dpr);
+            }
         }
-        window.addEventListener('resize', resizeCanvases);
+        window.addEventListener('resize', () => {
+            resizeCanvases();
+            if (currentPcaView === '2d') {
+                renderPCAChart();
+            } else if (topology3DEngine) {
+                topology3DEngine.render();
+            }
+            renderTelemetryChart();
+        });
         resizeCanvases();
+
+        // ---- 3D PCA Visual Topology Surface Engine ----
+        class LatentTopology3DEngine {
+            constructor(canvas, ctx) {
+                this.canvas = canvas;
+                this.ctx = ctx;
+                this.yaw = 0.78;         // 45 degrees azimuth
+                this.pitch = 0.52;       // 30 degrees inclination
+                this.distance = 3.8;
+                this.zoom = 1.0;
+                this.autoRotate = false; // Static analytical tool by default
+                this.autoRotateSpeed = 0.0035;
+                this.isDragging = false;
+                this.lastMouseX = 0;
+                this.lastMouseY = 0;
+                this.dragStartX = 0;
+                this.dragStartY = 0;
+                this.totalDragDist = 0;
+                this.mappedNodes = [];
+                this.hoveredNode = null;
+                this.animFrameId = null;
+                this.pulsePhase = 0;
+
+                this.initEvents();
+            }
+
+            initEvents() {
+                this.canvas.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.lastMouseX = e.clientX;
+                    this.lastMouseY = e.clientY;
+                    this.dragStartX = e.clientX;
+                    this.dragStartY = e.clientY;
+                    this.totalDragDist = 0;
+                    this.canvas.style.cursor = 'grabbing';
+                });
+
+                window.addEventListener('mouseup', () => {
+                    if (this.isDragging) {
+                        this.isDragging = false;
+                        this.canvas.style.cursor = 'grab';
+                    }
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (this.isDragging) {
+                        const dx = e.clientX - this.lastMouseX;
+                        const dy = e.clientY - this.lastMouseY;
+                        this.totalDragDist += Math.hypot(dx, dy);
+                        this.yaw += dx * 0.007;
+                        this.pitch += dy * 0.007;
+                        this.pitch = Math.max(0.06, Math.min(1.48, this.pitch));
+                        this.lastMouseX = e.clientX;
+                        this.lastMouseY = e.clientY;
+                    } else {
+                        this.handleHover(e);
+                    }
+                });
+
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    if (e.deltaY < 0) {
+                        this.zoom = Math.min(3.2, this.zoom * 1.08);
+                    } else {
+                        this.zoom = Math.max(0.45, this.zoom / 1.08);
+                    }
+                    this.render();
+                }, { passive: false });
+
+                this.canvas.addEventListener('mouseleave', () => {
+                    if (pcaTooltip) pcaTooltip.style.display = 'none';
+                    const hadHover = (this.hoveredNode !== null);
+                    this.hoveredNode = null;
+                    if (hadHover) this.render();
+                });
+
+                this.canvas.addEventListener('click', (e) => {
+                    if (this.totalDragDist < 6 && this.hoveredNode) {
+                        openNodeModal(this.hoveredNode.step);
+                    }
+                });
+
+                // Touch support
+                this.canvas.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        this.isDragging = true;
+                        this.lastMouseX = e.touches[0].clientX;
+                        this.lastMouseY = e.touches[0].clientY;
+                        this.dragStartX = e.touches[0].clientX;
+                        this.dragStartY = e.touches[0].clientY;
+                        this.totalDragDist = 0;
+                    }
+                });
+                this.canvas.addEventListener('touchmove', (e) => {
+                    if (this.isDragging && e.touches.length === 1) {
+                        const dx = e.touches[0].clientX - this.lastMouseX;
+                        const dy = e.touches[0].clientY - this.lastMouseY;
+                        this.totalDragDist += Math.hypot(dx, dy);
+                        this.yaw += dx * 0.007;
+                        this.pitch = Math.max(0.06, Math.min(1.48, this.pitch + dy * 0.007));
+                        this.lastMouseX = e.touches[0].clientX;
+                        this.lastMouseY = e.touches[0].clientY;
+                    }
+                });
+                this.canvas.addEventListener('touchend', () => {
+                    this.isDragging = false;
+                });
+            }
+
+            resetCamera() {
+                this.yaw = 0.78;
+                this.pitch = 0.52;
+                this.zoom = 1.0;
+            }
+
+            setPreset(viewName) {
+                this.autoRotate = false;
+                const btn = document.getElementById('btnAutoRotate');
+                const icon = document.getElementById('rotateIcon');
+                if (btn && icon) {
+                    btn.classList.remove('active');
+                    icon.innerText = '▶️';
+                }
+                if (viewName === 'iso') {
+                    this.yaw = 0.78;
+                    this.pitch = 0.52;
+                    this.zoom = 1.0;
+                } else if (viewName === 'top') {
+                    this.yaw = 0.0;
+                    this.pitch = 1.48; // Looking straight down (Plan View: PCA-1 vs PCA-2)
+                    this.zoom = 1.05;
+                } else if (viewName === 'side') {
+                    this.yaw = 0.0;
+                    this.pitch = 0.06; // Side Elevation Profile: PCA-1 vs Z-Metric
+                    this.zoom = 1.0;
+                } else if (viewName === 'front') {
+                    this.yaw = 1.57; // Front Cross-Section: PCA-2 vs Z-Metric
+                    this.pitch = 0.06;
+                    this.zoom = 1.0;
+                }
+                this.render();
+            }
+
+            project(wx, wy, wz, cw, ch, dpr) {
+                const cx = wx;
+                const cy = wy;
+                const cz = wz - 0.45;
+
+                const cosY = Math.cos(this.yaw), sinY = Math.sin(this.yaw);
+                const rx1 = cx * cosY - cy * sinY;
+                const ry1 = cx * sinY + cy * cosY;
+                const rz1 = cz;
+
+                const cosP = Math.cos(this.pitch), sinP = Math.sin(this.pitch);
+                const rx2 = rx1;
+                const ry2 = ry1 * cosP - rz1 * sinP;
+                const rz2 = ry1 * sinP + rz1 * cosP;
+
+                const camDist = this.distance / this.zoom;
+                const depth = ry2 + camDist;
+                if (depth <= 0.15) return null;
+
+                const fov = 380 * dpr;
+                const sx = cw / 2 + (rx2 * fov) / depth;
+                const sy = ch / 2 - (rz2 * fov) / depth;
+
+                return {
+                    x: sx,
+                    y: sy,
+                    depth: depth,
+                    scale: (fov / depth) / dpr,
+                    visible: true
+                };
+            }
+
+            handleHover(e) {
+                if (!pcaTooltip) return;
+                const rect = this.canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const mouseX = (e.clientX - rect.left) * dpr;
+                const mouseY = (e.clientY - rect.top) * dpr;
+
+                let closest = null;
+                let closestDist = 22 * dpr;
+
+                for (let node of this.mappedNodes) {
+                    const dx = node.sx - mouseX;
+                    const dy = node.sy - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closest = node;
+                    }
+                }
+
+                const prevHover = this.hoveredNode;
+                this.hoveredNode = closest;
+
+                if (closest) {
+                    this.canvas.style.cursor = 'pointer';
+                    pcaTooltip.style.display = 'block';
+                    pcaTooltip.style.left = (e.pageX + 14) + 'px';
+                    pcaTooltip.style.top = (e.pageY - 30) + 'px';
+
+                    let metricDetailHtml = '';
+                    if (pca3DMetric === 'novelty') {
+                        metricDetailHtml = `<b>Active Z (Novelty):</b> <span style="color: #00F0FF; font-weight:700;">${Number(closest.novelty).toFixed(3)}</span> [KDE Rareness]`;
+                    } else if (pca3DMetric === 'pca_z') {
+                        metricDetailHtml = `<b>Active Z (PCA-3):</b> <span style="color: #00FFB2; font-weight:700;">${Number(closest.z).toFixed(3)}</span> [Latent Subspace Variance]`;
+                    } else if (pca3DMetric === 'cohomology') {
+                        metricDetailHtml = `<b>Active Z (Cohomology):</b> <span style="color: #FF00E5; font-weight:700;">${Number(closest.cohomological_dim).toFixed(2)}D</span> [Topological Persistence]`;
+                    } else if (pca3DMetric === 'coherence') {
+                        metricDetailHtml = `<b>Active Z (Coherence):</b> <span style="color: #9D00FF; font-weight:700;">${Number(closest.coherence).toFixed(1)} / 10</span> [Semantic Flow]`;
+                    }
+
+                    pcaTooltip.innerHTML = `
+                        <div style="font-weight: 700; color: ${closest.is_gold ? '#FFC700' : '#00F0FF'}; margin-bottom: 4px;">
+                            ${closest.is_gold ? '⭐ Gold Vein Discovery' : '🧭 Expedition Node'} [Step ${closest.step}]
+                        </div>
+                        <div style="font-size: 0.75rem; color: #fff; margin-bottom: 6px; font-weight: 600;">
+                            ${closest.label || 'Subspace Vector Node'}
+                        </div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted); font-family: 'JetBrains Mono'; line-height: 1.5; margin-bottom: 4px;">
+                            ${metricDetailHtml}<br/>
+                            <span>Latent Vector (X, Y): (${Number(closest.x).toFixed(2)}, ${Number(closest.y).toFixed(2)})</span><br/>
+                            <span>Novelty: ${Number(closest.novelty).toFixed(2)} · Coherence: ${Number(closest.coherence).toFixed(1)}/10 · Cohomology: ${Number(closest.cohomological_dim).toFixed(2)}D</span>
+                        </div>
+                        <div style="font-size: 0.65rem; color: var(--accent-cyan); margin-top: 4px;">👆 Click node for deep inspection modal</div>
+                    `;
+                } else {
+                    this.canvas.style.cursor = 'grab';
+                    pcaTooltip.style.display = 'none';
+                }
+
+                if (prevHover !== this.hoveredNode) {
+                    this.render();
+                }
+            }
+
+            getMetricPalette(metric, t, shade = 1.0, alpha = 0.85) {
+                // Returns rgba string and border color for given metric and normalized height t in [0, 1]
+                const clampedT = Math.max(0, Math.min(1, t));
+                let r = 0, g = 0, b = 0;
+
+                if (metric === 'novelty') {
+                    // Cyan Abyss -> Electric Cyan -> Magenta Ridge -> Gold Summit
+                    if (clampedT < 0.25) {
+                        const u = clampedT / 0.25;
+                        r = Math.round(6 + u * 10);
+                        g = Math.round(20 + u * 120);
+                        b = Math.round(55 + u * 180);
+                    } else if (clampedT < 0.60) {
+                        const u = (clampedT - 0.25) / 0.35;
+                        r = Math.round(16 + u * 120);
+                        g = Math.round(140 + u * 70);
+                        b = Math.round(235 - u * 35);
+                    } else if (clampedT < 0.84) {
+                        const u = (clampedT - 0.60) / 0.24;
+                        r = Math.round(136 + u * 119);
+                        g = Math.round(210 - u * 180);
+                        b = Math.round(200 - u * 120);
+                    } else {
+                        const u = (clampedT - 0.84) / 0.16;
+                        r = 255;
+                        g = Math.round(30 + u * 170);
+                        b = Math.round(80 - u * 80);
+                    }
+                } else if (metric === 'pca_z') {
+                    // Deep Indigo -> Ocean Turquoise -> Mint Emerald -> Warm Amber
+                    if (clampedT < 0.25) {
+                        const u = clampedT / 0.25;
+                        r = Math.round(15 + u * 5);
+                        g = Math.round(12 + u * 80);
+                        b = Math.round(60 + u * 120);
+                    } else if (clampedT < 0.60) {
+                        const u = (clampedT - 0.25) / 0.35;
+                        r = Math.round(20 - u * 20);
+                        g = Math.round(92 + u * 120);
+                        b = Math.round(180 + u * 20);
+                    } else if (clampedT < 0.84) {
+                        const u = (clampedT - 0.60) / 0.24;
+                        r = Math.round(u * 220);
+                        g = Math.round(212 + u * 20);
+                        b = Math.round(200 - u * 170);
+                    } else {
+                        const u = (clampedT - 0.84) / 0.16;
+                        r = Math.round(220 + u * 35);
+                        g = Math.round(232 - u * 60);
+                        b = Math.round(30 - u * 30);
+                    }
+                } else if (metric === 'cohomology') {
+                    // Dark Amethyst -> Violet Orchid -> Electric Fuchsia -> Topo Gold
+                    if (clampedT < 0.25) {
+                        const u = clampedT / 0.25;
+                        r = Math.round(30 + u * 50);
+                        g = Math.round(8 + u * 20);
+                        b = Math.round(50 + u * 130);
+                    } else if (clampedT < 0.60) {
+                        const u = (clampedT - 0.25) / 0.35;
+                        r = Math.round(80 + u * 120);
+                        g = Math.round(28 - u * 28);
+                        b = Math.round(180 + u * 40);
+                    } else if (clampedT < 0.84) {
+                        const u = (clampedT - 0.60) / 0.24;
+                        r = Math.round(200 + u * 55);
+                        g = Math.round(u * 140);
+                        b = Math.round(220 - u * 160);
+                    } else {
+                        const u = (clampedT - 0.84) / 0.16;
+                        r = 255;
+                        g = Math.round(140 + u * 80);
+                        b = Math.round(60 - u * 60);
+                    }
+                } else {
+                    // Semantic Coherence: Charcoal Crimson -> Steel Cyan -> Radiant Emerald -> Solar Gold
+                    if (clampedT < 0.25) {
+                        const u = clampedT / 0.25;
+                        r = Math.round(55 + u * 20);
+                        g = Math.round(10 + u * 60);
+                        b = Math.round(25 + u * 110);
+                    } else if (clampedT < 0.60) {
+                        const u = (clampedT - 0.25) / 0.35;
+                        r = Math.round(75 - u * 75);
+                        g = Math.round(70 + u * 120);
+                        b = Math.round(135 + u * 50);
+                    } else if (clampedT < 0.84) {
+                        const u = (clampedT - 0.60) / 0.24;
+                        r = Math.round(u * 180);
+                        g = Math.round(190 + u * 45);
+                        b = Math.round(185 - u * 135);
+                    } else {
+                        const u = (clampedT - 0.84) / 0.16;
+                        r = Math.round(180 + u * 75);
+                        g = Math.round(235 - u * 25);
+                        b = Math.round(50 - u * 50);
+                    }
+                }
+
+                const litR = Math.min(255, Math.max(0, Math.round(r * shade)));
+                const litG = Math.min(255, Math.max(0, Math.round(g * shade)));
+                const litB = Math.min(255, Math.max(0, Math.round(b * shade)));
+
+                const strokeR = Math.min(255, litR + 40);
+                const strokeG = Math.min(255, litG + 40);
+                const strokeB = Math.min(255, litB + 40);
+
+                return {
+                    fill: `rgba(${litR}, ${litG}, ${litB}, ${alpha})`,
+                    stroke: `rgba(${strokeR}, ${strokeG}, ${strokeB}, 0.28)`,
+                    glow: `rgb(${litR}, ${litG}, ${litB})`
+                };
+            }
+
+            drawCoordinateAxesAndGrid(w, h, dpr, metricMin, metricMax) {
+                const ctx = this.ctx;
+                const gridLimit = 1.35;
+                const gridLines = 10;
+                const stepSize = (gridLimit * 2) / gridLines;
+
+                // 1. Bottom Ground Grid (XY Plane at Z = 0)
+                ctx.lineWidth = 1 * dpr;
+                ctx.strokeStyle = "rgba(0, 240, 255, 0.08)";
+
+                for (let i = 0; i <= gridLines; i++) {
+                    const pos = -gridLimit + i * stepSize;
+                    const p1 = this.project(-gridLimit, pos, 0, w, h, dpr);
+                    const p2 = this.project(gridLimit, pos, 0, w, h, dpr);
+                    if (p1 && p2) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                    const p3 = this.project(pos, -gridLimit, 0, w, h, dpr);
+                    const p4 = this.project(pos, gridLimit, 0, w, h, dpr);
+                    if (p3 && p4) {
+                        ctx.beginPath();
+                        ctx.moveTo(p3.x, p3.y);
+                        ctx.lineTo(p4.x, p4.y);
+                        ctx.stroke();
+                    }
+                }
+
+                // 2. Bounding Cage & Wall Grids (In Scatter Mode)
+                if (pca3DMode === 'scatter') {
+                    ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+                    ctx.lineWidth = 0.75 * dpr;
+
+                    // Back XZ Wall (at Y = gridLimit)
+                    for (let zStep = 0; zStep <= 4; zStep++) {
+                        const gz = zStep * 0.25;
+                        const wp1 = this.project(-gridLimit, gridLimit, gz, w, h, dpr);
+                        const wp2 = this.project(gridLimit, gridLimit, gz, w, h, dpr);
+                        if (wp1 && wp2) {
+                            ctx.beginPath(); ctx.moveTo(wp1.x, wp1.y); ctx.lineTo(wp2.x, wp2.y); ctx.stroke();
+                        }
+                    }
+                    // Side YZ Wall (at X = -gridLimit)
+                    for (let zStep = 0; zStep <= 4; zStep++) {
+                        const gz = zStep * 0.25;
+                        const wp1 = this.project(-gridLimit, -gridLimit, gz, w, h, dpr);
+                        const wp2 = this.project(-gridLimit, gridLimit, gz, w, h, dpr);
+                        if (wp1 && wp2) {
+                            ctx.beginPath(); ctx.moveTo(wp1.x, wp1.y); ctx.lineTo(wp2.x, wp2.y); ctx.stroke();
+                        }
+                    }
+
+                    // Vertical Corner Pillars of Cage
+                    [[-gridLimit, -gridLimit], [gridLimit, -gridLimit], [gridLimit, gridLimit], [-gridLimit, gridLimit]].forEach(([cx, cy]) => {
+                        const bPt = this.project(cx, cy, 0, w, h, dpr);
+                        const tPt = this.project(cx, cy, 1.05, w, h, dpr);
+                        if (bPt && tPt) {
+                            ctx.strokeStyle = "rgba(0, 240, 255, 0.15)";
+                            ctx.beginPath(); ctx.moveTo(bPt.x, bPt.y); ctx.lineTo(tPt.x, tPt.y); ctx.stroke();
+                        }
+                    });
+                }
+
+                // 3. Central Coordinate Origin & Axes Vectors
+                const origin = this.project(0, 0, 0, w, h, dpr);
+                const axisX = this.project(gridLimit * 1.08, 0, 0, w, h, dpr);
+                const axisY = this.project(0, gridLimit * 1.08, 0, w, h, dpr);
+                const axisZ = this.project(0, 0, 1.15, w, h, dpr);
+
+                if (origin && axisX && axisY && axisZ) {
+                    ctx.lineWidth = 1.6 * dpr;
+
+                    // PCA-1 Axis (Cyan)
+                    ctx.strokeStyle = "rgba(0, 240, 255, 0.65)";
+                    ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(axisX.x, axisX.y); ctx.stroke();
+
+                    // PCA-2 Axis (Magenta)
+                    ctx.strokeStyle = "rgba(255, 0, 229, 0.65)";
+                    ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(axisY.x, axisY.y); ctx.stroke();
+
+                    // Vertical Z-Axis (Gold)
+                    ctx.strokeStyle = "rgba(255, 199, 0, 0.75)";
+                    ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(axisZ.x, axisZ.y); ctx.stroke();
+
+                    // Axis Head Labels
+                    ctx.font = `bold ${10 * dpr}px 'JetBrains Mono'`;
+                    ctx.fillStyle = "#00F0FF";
+                    ctx.fillText("PCA-1", axisX.x + 5 * dpr, axisX.y + 3 * dpr);
+                    ctx.fillStyle = "#FF00E5";
+                    ctx.fillText("PCA-2", axisY.x + 5 * dpr, axisY.y + 3 * dpr);
+
+                    let zLabel = "Z: NOVELTY";
+                    if (pca3DMetric === 'pca_z') zLabel = "Z: PCA-3";
+                    else if (pca3DMetric === 'cohomology') zLabel = "Z: COHOMOLOGY";
+                    else if (pca3DMetric === 'coherence') zLabel = "Z: COHERENCE";
+
+                    ctx.fillStyle = "#FFC700";
+                    ctx.fillText(zLabel, axisZ.x - 12 * dpr, axisZ.y - 8 * dpr);
+                }
+
+                // 4. Vertical Z-Ruler with Metric Scale Ticks
+                const rulerX = -gridLimit;
+                const rulerY = -gridLimit;
+                const r0 = this.project(rulerX, rulerY, 0, w, h, dpr);
+                const rMid = this.project(rulerX, rulerY, 0.5, w, h, dpr);
+                const rTop = this.project(rulerX, rulerY, 1.0, w, h, dpr);
+
+                if (r0 && rMid && rTop) {
+                    ctx.lineWidth = 1.2 * dpr;
+                    ctx.strokeStyle = "rgba(255, 199, 0, 0.45)";
+                    ctx.beginPath(); ctx.moveTo(r0.x, r0.y); ctx.lineTo(rTop.x, rTop.y); ctx.stroke();
+
+                    ctx.font = `${8.5 * dpr}px 'JetBrains Mono'`;
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+                    ctx.textAlign = "right";
+
+                    let val0 = "0.0", valMid = "0.5", valTop = "1.0";
+                    if (pca3DMetric === 'novelty') {
+                        val0 = "0.00 (Basin)"; valMid = "0.50"; valTop = "1.00 (Summit)";
+                    } else if (pca3DMetric === 'pca_z') {
+                        val0 = `${metricMin.toFixed(2)}`; valMid = `${((metricMin + metricMax) / 2).toFixed(2)}`; valTop = `${metricMax.toFixed(2)}`;
+                    } else if (pca3DMetric === 'cohomology') {
+                        val0 = "1.00D"; valMid = "2.25D"; valTop = "3.50D+";
+                    } else if (pca3DMetric === 'coherence') {
+                        val0 = "1.0"; valMid = "5.5"; valTop = "10.0";
+                    }
+
+                    ctx.fillText(valTop, rTop.x - 6 * dpr, rTop.y + 3 * dpr);
+                    ctx.fillText(valMid, rMid.x - 6 * dpr, rMid.y + 3 * dpr);
+                    ctx.fillText(val0, r0.x - 6 * dpr, r0.y + 3 * dpr);
+                    ctx.textAlign = "left";
+                }
+            }
+
+            render() {
+                if (currentPcaView !== '3d') return;
+                if (!this.canvas.width || !this.canvas.height) {
+                    resizeCanvases();
+                }
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                const dpr = window.devicePixelRatio || 1;
+                const ctx = this.ctx;
+
+                ctx.clearRect(0, 0, w, h);
+
+                // Extract or synthesize PCA coordinates with resilience
+                let coords = (stateData && stateData.pca_coords && stateData.pca_coords.length > 0) ? stateData.pca_coords : [];
+                if (coords.length === 0 && stateData && stateData.journal_history && stateData.journal_history.length > 0) {
+                    coords = stateData.journal_history.map((e, i) => {
+                        const phi = i * 0.48;
+                        const r = 0.8 + i * 0.06;
+                        const nov = e.novelty_score !== undefined ? Number(e.novelty_score) : (e.is_gold ? 0.88 : 0.55);
+                        const coh = e.coherence_score !== undefined ? Number(e.coherence_score) : 8.0;
+                        const cd = e.cohomological_dim !== undefined ? Number(e.cohomological_dim) : (e.is_gold ? 2.1 : 1.2);
+                        return {
+                            x: Math.cos(phi) * r,
+                            y: Math.sin(phi) * r,
+                            z: Math.sin(i * 0.8) * 0.5 + nov * 0.5,
+                            label: e.location || (e.response ? e.response.substring(0, 24) : `Step ${i + 1}`),
+                            is_gold: Boolean(e.is_gold),
+                            step: e.step || (i + 1),
+                            novelty: nov,
+                            coherence: coh,
+                            cohomological_dim: cd
+                        };
+                    });
+                }
+                this.mappedNodes = [];
+
+                // 1. Metric Stats Calculation & Range Discovery
+                let metricMin = Infinity, metricMax = -Infinity;
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+                coords.forEach(c => {
+                    const cx = Number.isFinite(c.x) ? c.x : 0;
+                    const cy = Number.isFinite(c.y) ? c.y : 0;
+                    if (cx < minX) minX = cx;
+                    if (cx > maxX) maxX = cx;
+                    if (cy < minY) minY = cy;
+                    if (cy > maxY) maxY = cy;
+
+                    let val = 0;
+                    if (pca3DMetric === 'novelty') {
+                        val = Number.isFinite(c.novelty) ? c.novelty : (c.is_gold ? 0.90 : 0.55);
+                    } else if (pca3DMetric === 'pca_z') {
+                        val = Number.isFinite(c.z) ? c.z : (Number.isFinite(c.pca_z) ? c.pca_z : 0.0);
+                    } else if (pca3DMetric === 'cohomology') {
+                        val = Number.isFinite(c.cohomological_dim) ? c.cohomological_dim : (c.is_gold ? 2.1 : 1.2);
+                    } else if (pca3DMetric === 'coherence') {
+                        val = Number.isFinite(c.coherence) ? c.coherence : 7.5;
+                    }
+                    if (val < metricMin) metricMin = val;
+                    if (val > metricMax) metricMax = val;
+                });
+
+                if (!Number.isFinite(minX) || !Number.isFinite(maxX)) { minX = -1; maxX = 1; }
+                if (!Number.isFinite(minY) || !Number.isFinite(maxY)) { minY = -1; maxY = 1; }
+                if (!Number.isFinite(metricMin)) metricMin = 0;
+                if (!Number.isFinite(metricMax) || metricMax <= metricMin) metricMax = metricMin + 1;
+
+                const spanX = Math.max(maxX - minX, 0.4);
+                const spanY = Math.max(maxY - minY, 0.4);
+                const midX = (minX + maxX) / 2.0;
+                const midY = (minY + maxY) / 2.0;
+
+                // 2. Update HUD Indicators
+                const degYaw = Math.round(((this.yaw % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)) * (180 / Math.PI));
+                const degPitch = Math.round(this.pitch * (180 / Math.PI));
+                const hudAzimuth = document.getElementById('hudAzimuth');
+                const hudElevation = document.getElementById('hudElevation');
+                const hudZoom = document.getElementById('hudZoom');
+                const hudPoints = document.getElementById('hudPoints');
+                const hudActiveCombo = document.getElementById('hudActiveCombo');
+                const hudMetricStats = document.getElementById('hudMetricStats');
+
+                if (hudAzimuth) hudAzimuth.innerText = `Yaw: ${degYaw}°`;
+                if (hudElevation) hudElevation.innerText = `Pitch: ${degPitch}°`;
+                if (hudZoom) hudZoom.innerText = `Zoom: ${this.zoom.toFixed(1)}x`;
+                if (hudPoints) hudPoints.innerText = `Points: ${coords.length}`;
+
+                const modeLabels = {
+                    'surface': 'Shaded Surface',
+                    'wireframe': 'Cyber Wireframe',
+                    'manifold': 'Iso-Manifold',
+                    'scatter': '3D Scatter'
+                };
+                const metricLabels = {
+                    'novelty': 'Novelty (KDE)',
+                    'pca_z': 'PCA-3 Axis',
+                    'cohomology': 'Cohomology Dim',
+                    'coherence': 'Semantic Coherence'
+                };
+
+                if (hudActiveCombo) {
+                    hudActiveCombo.innerText = `${modeLabels[pca3DMode] || pca3DMode} · ${metricLabels[pca3DMetric] || pca3DMetric}`;
+                }
+                if (hudMetricStats) {
+                    hudMetricStats.innerText = `Range: [${metricMin.toFixed(2)} – ${metricMax.toFixed(2)}]`;
+                }
+
+                // 3. Draw Coordinate Axes, Ground Grid, and Vertical Z-Ruler
+                this.drawCoordinateAxesAndGrid(w, h, dpr, metricMin, metricMax);
+
+                if (coords.length === 0) {
+                    ctx.fillStyle = "rgba(0, 240, 255, 0.45)";
+                    ctx.font = `${12 * dpr}px 'JetBrains Mono'`;
+                    ctx.textAlign = "center";
+                    ctx.fillText("🏔️ Latent Space 3D Visual Topology Surface", w / 2, h / 2 - 10 * dpr);
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+                    ctx.font = `${10 * dpr}px 'JetBrains Mono'`;
+                    ctx.fillText("Awaiting expedition latent vectors to form topographical terrain...", w / 2, h / 2 + 15 * dpr);
+                    return;
+                }
+
+                // 4. Map Points into 3D World Space [-1.20, 1.20] x [0.06, 0.96]
+                const normPts = coords.map((c, i) => {
+                    const cx = Number.isFinite(c.x) ? c.x : 0;
+                    const cy = Number.isFinite(c.y) ? c.y : 0;
+                    const cz = Number.isFinite(c.z) ? c.z : 0;
+                    const nov = Number.isFinite(c.novelty) ? c.novelty : (c.is_gold ? 0.90 : 0.55);
+                    const coh = Number.isFinite(c.coherence) ? c.coherence : 7.5;
+                    const cd = Number.isFinite(c.cohomological_dim) ? c.cohomological_dim : (c.is_gold ? 2.1 : 1.2);
+
+                    const wx = ((cx - midX) / spanX) * 2.2;
+                    const wy = ((cy - midY) / spanY) * 2.2;
+
+                    let wz = 0.5;
+                    let rawMetricVal = 0.5;
+
+                    if (pca3DMetric === 'novelty') {
+                        rawMetricVal = nov;
+                        wz = Math.min(0.96, Math.max(0.06, nov));
+                    } else if (pca3DMetric === 'pca_z') {
+                        rawMetricVal = cz;
+                        const spanZ = Math.max(metricMax - metricMin, 0.001);
+                        wz = Math.min(0.96, Math.max(0.06, ((cz - metricMin) / spanZ) * 0.86 + 0.08));
+                    } else if (pca3DMetric === 'cohomology') {
+                        rawMetricVal = cd;
+                        wz = Math.min(0.96, Math.max(0.06, ((cd - 1.0) / 2.5) * 0.86 + 0.08));
+                    } else if (pca3DMetric === 'coherence') {
+                        rawMetricVal = coh;
+                        wz = Math.min(0.96, Math.max(0.06, ((coh - 1.0) / 9.0) * 0.86 + 0.08));
+                    }
+
+                    if (c.is_gold && pca3DMetric === 'novelty') {
+                        wz = Math.max(wz, 0.88);
+                    }
+
+                    return {
+                        raw: c,
+                        step: c.step || (i + 1),
+                        label: c.label || (c.concept || ''),
+                        is_gold: Boolean(c.is_gold),
+                        novelty: nov,
+                        coherence: coh,
+                        cohomological_dim: cd,
+                        rawMetricVal: rawMetricVal,
+                        x: cx,
+                        y: cy,
+                        z: cz,
+                        wx: wx,
+                        wy: wy,
+                        wz: wz
+                    };
+                });
+
+                // 5. Generate Topological Potential Surface Mesh (24x24)
+                const meshRes = 24;
+                const meshLimit = 1.30;
+                const meshStep = (meshLimit * 2) / meshRes;
+                const hBandwidth = Math.max(0.28, Math.min(0.55, 1.25 / Math.sqrt(Math.max(normPts.length, 1))));
+                const twoH2 = 2 * hBandwidth * hBandwidth;
+
+                const vGrid = [];
+                for (let i = 0; i <= meshRes; i++) {
+                    vGrid[i] = [];
+                    const gx = -meshLimit + i * meshStep;
+                    for (let j = 0; j <= meshRes; j++) {
+                        const gy = -meshLimit + j * meshStep;
+
+                        let weightSum = 0;
+                        let weightedHeight = 0;
+                        let peakInfluence = 0;
+
+                        for (let pt of normPts) {
+                            const dx = gx - pt.wx;
+                            const dy = gy - pt.wy;
+                            const d2 = dx * dx + dy * dy;
+                            const d = Math.sqrt(d2);
+
+                            const gKernel = Math.exp(-d2 / twoH2);
+                            weightSum += gKernel;
+                            weightedHeight += pt.wz * gKernel;
+
+                            if (d < hBandwidth * 1.5) {
+                                const localPeak = pt.wz * Math.max(0, 1 - d / (hBandwidth * 1.5));
+                                if (localPeak > peakInfluence) peakInfluence = localPeak;
+                            }
+                        }
+
+                        const localSmooth = (weightSum > 0.0001) ? (weightedHeight / weightSum) : 0.05;
+                        const density = Math.min(1.0, weightSum * 0.80);
+                        let elev = 0.04 * (1 - density) + (0.40 * localSmooth + 0.60 * peakInfluence) * density;
+
+                        // Radial edge falloff anchoring boundary to base plane
+                        const edgeR = Math.max(Math.abs(gx), Math.abs(gy)) / meshLimit;
+                        const falloff = Math.max(0, 1 - Math.pow(edgeR, 4.0));
+                        const finalZ = elev * falloff + 0.04;
+
+                        vGrid[i][j] = {
+                            gx: gx,
+                            gy: gy,
+                            gz: finalZ,
+                            proj: this.project(gx, gy, finalZ, w, h, dpr)
+                        };
+                    }
+                }
+
+                // 6. Build Unified Painter's Depth Queue
+                const renderQueue = [];
+
+                // A. Add Surface Facets (if mode is not 'scatter')
+                if (pca3DMode !== 'scatter') {
+                    for (let i = 0; i < meshRes; i++) {
+                        for (let j = 0; j < meshRes; j++) {
+                            const v00 = vGrid[i][j];
+                            const v10 = vGrid[i+1][j];
+                            const v11 = vGrid[i+1][j+1];
+                            const v01 = vGrid[i][j+1];
+
+                            if (v00.proj && v10.proj && v11.proj && v01.proj) {
+                                const avgDepth = (v00.proj.depth + v10.proj.depth + v11.proj.depth + v01.proj.depth) / 4.0;
+                                const avgZ = (v00.gz + v10.gz + v11.gz + v01.gz) / 4.0;
+
+                                const dzdx = (v10.gz - v00.gz + v11.gz - v01.gz) / (2 * meshStep);
+                                const dzdy = (v01.gz - v00.gz + v11.gz - v10.gz) / (2 * meshStep);
+                                const normLen = Math.sqrt(dzdx * dzdx + dzdy * dzdy + 1.0);
+                                const nx = -dzdx / normLen;
+                                const ny = -dzdy / normLen;
+                                const nz = 1.0 / normLen;
+
+                                // Directional light vector (-0.40, -0.60, 0.75)
+                                const lx = -0.40, ly = -0.60, lz = 0.75;
+                                const lLen = Math.sqrt(lx * lx + ly * ly + lz * lz);
+                                const dot = (nx * lx + ny * ly + nz * lz) / lLen;
+                                const shade = Math.max(0.25, Math.min(1.0, 0.40 + 0.60 * dot));
+
+                                renderQueue.push({
+                                    type: 'facet',
+                                    depth: avgDepth,
+                                    z: avgZ,
+                                    shade: shade,
+                                    pts: [v00.proj, v10.proj, v11.proj, v01.proj]
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // B. Project Nodes and Trajectory Segments
+                const projectedNodes = [];
+                normPts.forEach(pt => {
+                    const p = this.project(pt.wx, pt.wy, pt.wz, w, h, dpr);
+                    const pBase = this.project(pt.wx, pt.wy, 0, w, h, dpr);
+                    if (p) {
+                        projectedNodes.push({
+                            proj: p,
+                            base: pBase,
+                            data: pt
+                        });
+                    }
+                });
+
+                // Trajectory Ribbon Segments
+                for (let idx = 0; idx < projectedNodes.length - 1; idx++) {
+                    const nA = projectedNodes[idx];
+                    const nB = projectedNodes[idx + 1];
+                    const segDepth = (nA.proj.depth + nB.proj.depth) / 2.0;
+                    renderQueue.push({
+                        type: 'trajectory_segment',
+                        depth: segDepth,
+                        pA: nA.proj,
+                        pB: nB.proj,
+                        isGoldTransition: nB.data.is_gold
+                    });
+                }
+
+                // Node Objects
+                projectedNodes.forEach((pn, idx) => {
+                    renderQueue.push({
+                        type: 'node',
+                        depth: pn.proj.depth,
+                        pn: pn,
+                        idx: idx,
+                        isLatest: (idx === projectedNodes.length - 1)
+                    });
+                });
+
+                // 7. Sort Entire Queue Back-to-Front (Painter's Algorithm)
+                renderQueue.sort((a, b) => b.depth - a.depth);
+
+                // 8. Render All Elements in Depth Order
+                this.pulsePhase = (this.pulsePhase + 0.05) % (Math.PI * 2);
+                const pulseScale = 1 + 0.18 * Math.sin(this.pulsePhase);
+
+                renderQueue.forEach(item => {
+                    if (item.type === 'facet') {
+                        // ---- RENDER SURFACE / WIREFRAME / MANIFOLD FACET ----
+                        ctx.beginPath();
+                        ctx.moveTo(item.pts[0].x, item.pts[0].y);
+                        ctx.lineTo(item.pts[1].x, item.pts[1].y);
+                        ctx.lineTo(item.pts[2].x, item.pts[2].y);
+                        ctx.lineTo(item.pts[3].x, item.pts[3].y);
+                        ctx.closePath();
+
+                        if (pca3DMode === 'surface') {
+                            const pal = this.getMetricPalette(pca3DMetric, item.z, item.shade, 0.82);
+                            ctx.fillStyle = pal.fill;
+                            ctx.fill();
+                            ctx.strokeStyle = pal.stroke;
+                            ctx.lineWidth = 0.75 * dpr;
+                            ctx.stroke();
+                        } else if (pca3DMode === 'wireframe') {
+                            // Dark translucent occluding hull + neon metric isoline stroke
+                            ctx.fillStyle = "rgba(4, 9, 22, 0.60)";
+                            ctx.fill();
+                            const pal = this.getMetricPalette(pca3DMetric, item.z, 1.0, 1.0);
+                            ctx.strokeStyle = pal.glow;
+                            ctx.lineWidth = (item.z > 0.75 ? 1.4 : 0.9) * dpr;
+                            ctx.stroke();
+                        } else if (pca3DMode === 'manifold') {
+                            // 8-Level Quantized Stepped Strata Terraces
+                            const band = Math.floor(item.z * 8);
+                            const bandT = Math.min(1.0, band / 7.0);
+                            const pal = this.getMetricPalette(pca3DMetric, bandT, 1.0, 0.88);
+                            ctx.fillStyle = pal.fill;
+                            ctx.fill();
+                            ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+                            ctx.lineWidth = 1.2 * dpr;
+                            ctx.stroke();
+                        }
+                    } else if (item.type === 'trajectory_segment') {
+                        // ---- RENDER 3D TRAJECTORY RIBBON ----
+                        ctx.beginPath();
+                        ctx.lineWidth = (item.isGoldTransition ? 3.0 : 2.2) * dpr;
+                        ctx.strokeStyle = item.isGoldTransition ? "rgba(255, 199, 0, 0.90)" : "rgba(0, 240, 255, 0.85)";
+                        ctx.moveTo(item.pA.x, item.pA.y);
+                        ctx.lineTo(item.pB.x, item.pB.y);
+                        ctx.stroke();
+                    } else if (item.type === 'node') {
+                        // ---- RENDER 3D NODE, BEACON & DROP-LINE ----
+                        const pn = item.pn;
+                        const p = pn.proj;
+                        const pt = pn.data;
+                        const isLatest = item.isLatest;
+                        const nodeRadius = Math.max(3.8, 6.5 * p.scale) * dpr;
+
+                        this.mappedNodes.push({
+                            sx: p.x,
+                            sy: p.y,
+                            depth: p.depth,
+                            step: pt.step,
+                            label: pt.label,
+                            is_gold: pt.is_gold,
+                            novelty: pt.novelty,
+                            coherence: pt.coherence,
+                            cohomological_dim: pt.cohomological_dim,
+                            rawMetricVal: pt.rawMetricVal,
+                            x: pt.x,
+                            y: pt.y,
+                            z: pt.z
+                        });
+
+                        // Vertical Drop-Line to Ground Plane & Shadow Disc
+                        if (pn.base) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = pt.is_gold ? "rgba(255, 199, 0, 0.45)" : "rgba(0, 240, 255, 0.22)";
+                            ctx.lineWidth = 1 * dpr;
+                            ctx.setLineDash([2 * dpr, 2 * dpr]);
+                            ctx.moveTo(pn.base.x, pn.base.y);
+                            ctx.lineTo(p.x, p.y);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+
+                            ctx.beginPath();
+                            ctx.fillStyle = pt.is_gold ? "rgba(255, 199, 0, 0.40)" : "rgba(0, 240, 255, 0.20)";
+                            ctx.arc(pn.base.x, pn.base.y, 2.8 * dpr, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+
+                        // 3D Orbital Sphere Node
+                        ctx.beginPath();
+                        if (pt.is_gold) {
+                            const r = nodeRadius * 1.5 * pulseScale;
+                            ctx.shadowColor = "#FFC700";
+                            ctx.shadowBlur = 18 * dpr;
+                            ctx.fillStyle = "#FFC700";
+                            ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            ctx.beginPath();
+                            ctx.strokeStyle = "rgba(255, 199, 0, 0.65)";
+                            ctx.lineWidth = 1.5 * dpr;
+                            ctx.arc(p.x, p.y, r * 1.6, 0, Math.PI * 2);
+                            ctx.stroke();
+                        } else if (isLatest) {
+                            const r = nodeRadius * 1.35;
+                            ctx.shadowColor = "#00F0FF";
+                            ctx.shadowBlur = 14 * dpr;
+                            ctx.fillStyle = "#00F0FF";
+                            ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            ctx.beginPath();
+                            ctx.strokeStyle = "rgba(0, 240, 255, 0.75)";
+                            ctx.lineWidth = 1.5 * dpr;
+                            ctx.arc(p.x, p.y, r * (1.3 + 0.3 * Math.sin(this.pulsePhase)), 0, Math.PI * 2);
+                            ctx.stroke();
+                        } else {
+                            ctx.shadowBlur = 0;
+                            const pal = this.getMetricPalette(pca3DMetric, pt.wz, 1.0, 1.0);
+                            ctx.fillStyle = (pca3DMode === 'scatter') ? pal.glow : `rgba(255, 255, 255, ${0.45 + (item.idx / projectedNodes.length) * 0.45})`;
+                            ctx.arc(p.x, p.y, nodeRadius * 0.9, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            if (pca3DMode === 'scatter') {
+                                ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+                                ctx.lineWidth = 0.8 * dpr;
+                                ctx.stroke();
+                            }
+                        }
+
+                        ctx.shadowBlur = 0;
+
+                        // Node Step Label
+                        if (pt.is_gold || isLatest) {
+                            ctx.font = `bold ${Math.max(9, 10 * p.scale) * dpr}px 'JetBrains Mono'`;
+                            ctx.fillStyle = pt.is_gold ? "#FFC700" : "#00F0FF";
+                            ctx.textAlign = "left";
+                            const lbl = `[Step ${pt.step}] ${pt.label ? pt.label.substring(0, 18) : ''}`;
+                            ctx.fillText(lbl, p.x + 10 * dpr, p.y - 8 * dpr);
+                        }
+                    }
+                });
+
+                // 9. Highlight Hovered Node with 3D Spatial Crosshairs & Delta Vectors
+                if (this.hoveredNode) {
+                    const hStep = this.hoveredNode.step;
+                    const hPt = normPts.find(p => p.step === hStep);
+                    if (hPt) {
+                        const pHover = this.project(hPt.wx, hPt.wy, hPt.wz, w, h, dpr);
+                        const pFloor = this.project(hPt.wx, hPt.wy, 0, w, h, dpr);
+                        const pBack = this.project(hPt.wx, 1.35, hPt.wz, w, h, dpr);
+                        const pSide = this.project(-1.35, hPt.wy, hPt.wz, w, h, dpr);
+
+                        if (pHover) {
+                            ctx.save();
+                            // Projection lines to reference planes
+                            ctx.lineWidth = 1.2 * dpr;
+                            ctx.setLineDash([3 * dpr, 3 * dpr]);
+
+                            if (pFloor) {
+                                ctx.strokeStyle = "rgba(255, 199, 0, 0.85)";
+                                ctx.beginPath(); ctx.moveTo(pHover.x, pHover.y); ctx.lineTo(pFloor.x, pFloor.y); ctx.stroke();
+                            }
+                            if (pBack) {
+                                ctx.strokeStyle = "rgba(0, 240, 255, 0.75)";
+                                ctx.beginPath(); ctx.moveTo(pHover.x, pHover.y); ctx.lineTo(pBack.x, pBack.y); ctx.stroke();
+                            }
+                            if (pSide) {
+                                ctx.strokeStyle = "rgba(255, 0, 229, 0.75)";
+                                ctx.beginPath(); ctx.moveTo(pHover.x, pHover.y); ctx.lineTo(pSide.x, pSide.y); ctx.stroke();
+                            }
+                            ctx.setLineDash([]);
+
+                            // Animated Target Reticle
+                            ctx.strokeStyle = "#00F0FF";
+                            ctx.lineWidth = 1.8 * dpr;
+                            ctx.beginPath();
+                            ctx.arc(pHover.x, pHover.y, 14 * dpr, 0, Math.PI * 2);
+                            ctx.stroke();
+
+                            ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+                            ctx.beginPath();
+                            ctx.moveTo(pHover.x - 18 * dpr, pHover.y); ctx.lineTo(pHover.x - 10 * dpr, pHover.y);
+                            ctx.moveTo(pHover.x + 10 * dpr, pHover.y); ctx.lineTo(pHover.x + 18 * dpr, pHover.y);
+                            ctx.moveTo(pHover.x, pHover.y - 18 * dpr); ctx.lineTo(pHover.x, pHover.y - 10 * dpr);
+                            ctx.moveTo(pHover.x, pHover.y + 10 * dpr); ctx.lineTo(pHover.x, pHover.y + 18 * dpr);
+                            ctx.stroke();
+
+                            // Vector from previous step
+                            const prevIdx = normPts.findIndex(p => p.step === hStep) - 1;
+                            if (prevIdx >= 0) {
+                                const prevPt = normPts[prevIdx];
+                                const pPrev = this.project(prevPt.wx, prevPt.wy, prevPt.wz, w, h, dpr);
+                                if (pPrev) {
+                                    const dX = hPt.x - prevPt.x;
+                                    const dY = hPt.y - prevPt.y;
+                                    const dZ = hPt.z - prevPt.z;
+                                    const spatialDist = Math.sqrt(dX * dX + dY * dY + dZ * dZ);
+
+                                    ctx.lineWidth = 2.0 * dpr;
+                                    ctx.strokeStyle = "#FFC700";
+                                    ctx.beginPath();
+                                    ctx.moveTo(pPrev.x, pPrev.y);
+                                    ctx.lineTo(pHover.x, pHover.y);
+                                    ctx.stroke();
+
+                                    const midX = (pPrev.x + pHover.x) / 2;
+                                    const midY = (pPrev.y + pHover.y) / 2;
+                                    ctx.font = `bold ${9 * dpr}px 'JetBrains Mono'`;
+                                    ctx.fillStyle = "#FFC700";
+                                    ctx.fillText(`Δ|v|: ${spatialDist.toFixed(2)}`, midX + 6 * dpr, midY - 6 * dpr);
+                                }
+                            }
+                            ctx.restore();
+                        }
+                    }
+                }
+            }
+
+            startLoop() {
+                if (this.animFrameId) return;
+                const loop = () => {
+                    if (currentPcaView === '3d') {
+                        if (this.autoRotate && !this.isDragging) {
+                            this.yaw += this.autoRotateSpeed;
+                        }
+                        this.render();
+                    }
+                    this.animFrameId = requestAnimationFrame(loop);
+                };
+                this.animFrameId = requestAnimationFrame(loop);
+            }
+
+            stopLoop() {
+                if (this.animFrameId) {
+                    cancelAnimationFrame(this.animFrameId);
+                    this.animFrameId = null;
+                }
+            }
+        }
+
+        // Initialize 3D Engine immediately
+        if (pca3dCanvas && pca3dCtx) {
+            topology3DEngine = new LatentTopology3DEngine(pca3dCanvas, pca3dCtx);
+            topology3DEngine.startLoop();
+        }
+
+        // View Mode Toggle & Control Handlers
+        function switchPcaView(view) {
+            currentPcaView = view;
+            const tab2D = document.getElementById('tabPca2D');
+            const tab3D = document.getElementById('tabPca3D');
+            const canvas2D = document.getElementById('pcaCanvas');
+            const container3D = document.getElementById('pca3dContainer');
+            const controls3D = document.getElementById('pca3DControls');
+
+            if (view === '2d') {
+                if (tab2D) tab2D.classList.add('active');
+                if (tab3D) tab3D.classList.remove('active');
+                if (canvas2D) canvas2D.style.display = 'block';
+                if (container3D) container3D.style.display = 'none';
+                if (controls3D) controls3D.style.display = 'none';
+                resizeCanvases();
+                renderPCAChart();
+            } else {
+                if (tab3D) tab3D.classList.add('active');
+                if (tab2D) tab2D.classList.remove('active');
+                if (canvas2D) canvas2D.style.display = 'none';
+                if (container3D) container3D.style.display = 'block';
+                if (controls3D) controls3D.style.display = 'inline-flex';
+
+                const modeSel = document.getElementById('pca3DModeSelect');
+                if (modeSel) pca3DMode = modeSel.value;
+                const metricSel = document.getElementById('pca3DMetricSelect');
+                if (metricSel) pca3DMetric = metricSel.value;
+                
+                resizeCanvases();
+                if (!topology3DEngine && pca3dCanvas && pca3dCtx) {
+                    topology3DEngine = new LatentTopology3DEngine(pca3dCanvas, pca3dCtx);
+                    topology3DEngine.startLoop();
+                }
+                if (topology3DEngine) {
+                    topology3DEngine.render();
+                }
+            }
+        }
+
+        function on3DModeChange() {
+            const select = document.getElementById('pca3DModeSelect');
+            if (select) {
+                pca3DMode = select.value;
+                if (topology3DEngine) topology3DEngine.render();
+            }
+        }
+
+        function on3DMetricChange() {
+            const select = document.getElementById('pca3DMetricSelect');
+            if (select) {
+                pca3DMetric = select.value;
+                if (topology3DEngine) topology3DEngine.render();
+            }
+        }
+
+        // Attach direct DOM change event listeners to select elements
+        const select3DMode = document.getElementById('pca3DModeSelect');
+        if (select3DMode) {
+            select3DMode.addEventListener('change', on3DModeChange);
+        }
+        const select3DMetric = document.getElementById('pca3DMetricSelect');
+        if (select3DMetric) {
+            select3DMetric.addEventListener('change', on3DMetricChange);
+        }
+
+        function toggle3DAutoRotate() {
+            if (topology3DEngine) {
+                topology3DEngine.autoRotate = !topology3DEngine.autoRotate;
+                const btn = document.getElementById('btnAutoRotate');
+                const icon = document.getElementById('rotateIcon');
+                if (btn && icon) {
+                    if (topology3DEngine.autoRotate) {
+                        btn.classList.add('active');
+                        icon.innerText = '⏸️';
+                    } else {
+                        btn.classList.remove('active');
+                        icon.innerText = '▶️';
+                    }
+                }
+            }
+        }
+
+        function reset3DCamera() {
+            if (topology3DEngine) {
+                topology3DEngine.resetCamera();
+                topology3DEngine.render();
+            }
+        }
+
+        function set3DPreset(preset) {
+            if (topology3DEngine) {
+                topology3DEngine.setPreset(preset);
+            }
+        }
 
         let stateData = null;
         let isDraggingSliders = false;
@@ -1732,7 +3402,11 @@
                 }
             }
 
-            renderPCAChart();
+            if (currentPcaView === '2d') {
+                renderPCAChart();
+            } else if (topology3DEngine) {
+                topology3DEngine.render();
+            }
             renderTelemetryChart();
             renderJournalFeed();
             renderParetoFrontier();
@@ -1740,9 +3414,12 @@
         }
 
         function renderPCAChart() {
+            if (!pcaCanvas.width || !pcaCanvas.height) {
+                resizeCanvases();
+            }
             const w = pcaCanvas.width;
             const h = pcaCanvas.height;
-            const dpr = window.devicePixelRatio;
+            const dpr = window.devicePixelRatio || 1;
             pcaCtx.clearRect(0, 0, w, h);
 
             // Draw background grid
@@ -1835,9 +3512,12 @@
         }
 
         function renderTelemetryChart() {
+            if (!telemetryCanvas.width || !telemetryCanvas.height) {
+                resizeCanvases();
+            }
             const w = telemetryCanvas.width;
             const h = telemetryCanvas.height;
-            const dpr = window.devicePixelRatio;
+            const dpr = window.devicePixelRatio || 1;
             telemetryCtx.clearRect(0, 0, w, h);
 
             const history = stateData.telemetry_history || stateData.journal_history || [];
@@ -2078,10 +3758,24 @@
             if (closestNode) {
                 pcaCanvas.style.cursor = 'pointer';
                 pcaTooltip.style.display = 'block';
-                pcaTooltip.style.left = `${e.clientX}px`;
-                pcaTooltip.style.top = `${e.clientY}px`;
-                const isGold = closestNode.data.is_gold;
-                pcaTooltip.innerHTML = `<strong>Step ${closestNode.data.step}</strong>: ${closestNode.data.label || 'Concept'} ${isGold ? '🌟 GOLD' : ''}`;
+                pcaTooltip.style.left = (e.pageX + 14) + 'px';
+                pcaTooltip.style.top = (e.pageY - 30) + 'px';
+                const c = closestNode.data;
+                const isGold = c.is_gold;
+                pcaTooltip.innerHTML = `
+                    <div style="font-weight: 700; color: ${isGold ? '#FFC700' : '#00F0FF'}; margin-bottom: 4px;">
+                        ${isGold ? '⭐ Gold Discovery' : '🧭 Trajectory Node'} [Step ${c.step}]
+                    </div>
+                    <div style="font-size: 0.75rem; color: #fff; margin-bottom: 4px;">
+                        ${c.label || 'Unknown Concept'}
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); font-family: 'JetBrains Mono';">
+                        2D PCA: (${(c.x || 0).toFixed(2)}, ${(c.y || 0).toFixed(2)})<br/>
+                        Novelty: <span style="color: #00F0FF;">${(c.novelty !== undefined ? c.novelty : 0.75).toFixed(2)}</span> |
+                        Coherence: <span style="color: #9D00FF;">${(c.coherence !== undefined ? c.coherence : 8).toFixed(1)}/10</span>
+                    </div>
+                    <div style="font-size: 0.65rem; color: var(--accent-cyan); margin-top: 4px;">👆 Click node for deep inspection</div>
+                `;
             } else {
                 pcaCanvas.style.cursor = 'default';
                 pcaTooltip.style.display = 'none';
@@ -2560,6 +4254,164 @@
         if (journalFileInput) {
             journalFileInput.addEventListener('change', handleFileUpload);
         }
+
+        // ---- Field Guide Modal Handlers ----
+        const btnOpenGuide = document.getElementById('btnOpenGuide');
+        const guideModal = document.getElementById('guideModal');
+        const guideModalClose = document.getElementById('guideModalClose');
+
+        if (btnOpenGuide && guideModal) {
+            btnOpenGuide.addEventListener('click', () => {
+                guideModal.classList.add('active');
+            });
+        }
+
+        if (guideModalClose && guideModal) {
+            guideModalClose.addEventListener('click', () => {
+                guideModal.classList.remove('active');
+            });
+        }
+
+        if (guideModal) {
+            guideModal.addEventListener('click', (e) => {
+                if (e.target === guideModal) {
+                    guideModal.classList.remove('active');
+                }
+            });
+        }
+
+        // Extend Escape key to close Guide modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && guideModal && guideModal.classList.contains('active')) {
+                guideModal.classList.remove('active');
+            }
+            if (e.key === 'Escape' && archiveModal && archiveModal.classList.contains('active')) {
+                archiveModal.classList.remove('active');
+            }
+        });
+
+        // ---- Smart Latent Mining Hover Tooltip Engine ----
+        (function initMiningTooltips() {
+            const tooltip = document.getElementById('miningTooltip');
+            const mttTitle = document.getElementById('mttTitle');
+            const mttBadge = document.getElementById('mttBadge');
+            const mttDesc = document.getElementById('mttDesc');
+            const mttTip = document.getElementById('mttTip');
+            if (!tooltip) return;
+
+            let currentTarget = null;
+
+            function positionTooltip(icon) {
+                if (!tooltip || tooltip.style.display !== 'block' || !icon) return;
+                const rect = icon.getBoundingClientRect();
+                const tipWidth = tooltip.offsetWidth || 300;
+                const tipHeight = tooltip.offsetHeight || 120;
+
+                // Attempt to place above the info icon by default
+                let top = rect.top - tipHeight - 10;
+                if (top < 12) {
+                    // Place below if not enough clearance above
+                    top = rect.bottom + 10;
+                }
+
+                // Center horizontally over the icon
+                let left = rect.left + (rect.width / 2) - (tipWidth / 2);
+
+                // Clamp within viewport margins
+                if (left < 14) {
+                    left = 14;
+                } else if (left + tipWidth > window.innerWidth - 14) {
+                    left = window.innerWidth - tipWidth - 14;
+                }
+
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+            }
+
+            function showTooltipForIcon(icon) {
+                const source = icon.hasAttribute('data-tt-title') ? icon : icon.closest('[data-tt-title]');
+                if (!source) return;
+
+                currentTarget = icon;
+                const title = source.getAttribute('data-tt-title') || '';
+                const category = source.getAttribute('data-tt-category') || 'Metric';
+                const desc = source.getAttribute('data-tt-desc') || '';
+                const tip = source.getAttribute('data-tt-tip') || '';
+
+                mttTitle.innerHTML = title;
+                mttBadge.innerText = category;
+                mttDesc.innerText = desc;
+                
+                if (tip) {
+                    mttTip.innerText = `💡 ${tip}`;
+                    mttTip.style.display = 'block';
+                } else {
+                    mttTip.style.display = 'none';
+                }
+
+                // Badge color accenting
+                mttBadge.className = 'mining-tooltip-badge';
+                if (/gold|vein|archive|vault/i.test(category + title)) {
+                    mttBadge.classList.add('gold');
+                } else if (/topology|homology|sampling|lens/i.test(category + title)) {
+                    mttBadge.classList.add('purple');
+                }
+
+                tooltip.style.display = 'block';
+                positionTooltip(icon);
+            }
+
+            function hideTooltip() {
+                currentTarget = null;
+                tooltip.style.display = 'none';
+            }
+
+            // ONLY trigger tooltip when mouse enters a designated info-icon
+            document.addEventListener('mouseover', (e) => {
+                const icon = e.target.closest('.info-icon, [data-tt-icon]');
+                if (icon) {
+                    showTooltipForIcon(icon);
+                }
+            });
+
+            document.addEventListener('mouseout', (e) => {
+                const icon = e.target.closest('.info-icon, [data-tt-icon]');
+                if (icon && icon === currentTarget) {
+                    if (e.relatedTarget && icon.contains(e.relatedTarget)) {
+                        return;
+                    }
+                    hideTooltip();
+                }
+            });
+
+            // Keyboard accessibility
+            document.addEventListener('focusin', (e) => {
+                const icon = e.target.closest('.info-icon, [data-tt-icon]');
+                if (icon) {
+                    showTooltipForIcon(icon);
+                }
+            });
+
+            document.addEventListener('focusout', (e) => {
+                const icon = e.target.closest('.info-icon, [data-tt-icon]');
+                if (icon && icon === currentTarget) {
+                    hideTooltip();
+                }
+            });
+
+            // Re-anchor on scroll/resize if an info icon is actively hovered
+            window.addEventListener('scroll', () => {
+                if (currentTarget) {
+                    positionTooltip(currentTarget);
+                }
+            }, { passive: true });
+
+            window.addEventListener('resize', () => {
+                if (currentTarget) {
+                    positionTooltip(currentTarget);
+                }
+            });
+        })();
     </script>
 </body>
 </html>

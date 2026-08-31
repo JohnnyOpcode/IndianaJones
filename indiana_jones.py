@@ -1,39 +1,20 @@
 import os
 import sys
 
-# Ensure UTF-8 output encoding
+# Ensure UTF-8 output encoding with line buffering and charmap resilience
 if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
-if hasattr(sys.stderr, 'reconfigure'):
-    sys.stderr.reconfigure(encoding='utf-8')
-
-# Workaround for llama-cpp-python CUDA DLL loading issue on Windows
-cuda_paths = [
-    os.environ.get("CUDA_PATH", r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.3"),
-    r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.3",
-    r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9",
-]
-
-for cp in cuda_paths:
-    if not cp:
-        continue
-    bin_x64 = os.path.join(cp, "bin", "x64")
-    bin_path = os.path.join(cp, "bin")
-    for p in [bin_x64, bin_path]:
-        if os.path.exists(p):
-            try:
-                os.add_dll_directory(p)
-            except Exception:
-                pass
-            os.environ["PATH"] = p + os.pathsep + os.environ["PATH"]
-
-# Add virtualenv or site-packages llama_cpp/lib directory to DLL search path if present
-venv_lib = os.path.join(os.path.dirname(__file__), ".venv", "Lib", "site-packages", "llama_cpp", "lib")
-if os.path.exists(venv_lib):
     try:
-        os.add_dll_directory(venv_lib)
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
     except Exception:
         pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
+    except Exception:
+        pass
+
+# Setup Windows CUDA DLL search paths before importing llama_cpp
+import core.dll_setup
 
 from core.config import ExplorerConfig, parse_args
 from core.explorer import LatentExplorer

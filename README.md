@@ -13,29 +13,30 @@ By fusing **Persistent Cohomology & Simplicial Complex Analysis**, **PCA Subspac
 
 ## ✨ Key Architectural Innovations
 
-### 1. 📐 Persistent Cohomology & Sheaf Obstruction Engine
-- **Vietoris-Rips Simplicial Complexes**: Constructs $C_0, C_1, C_2$ simplicial complexes and calculates boundary operator ranks $B_1, B_2$ over latent trajectory embeddings.
-- **Betti Numbers ($b_0, b_1, b_2$) & Cohomological Dimension**: Detects topological 1-cycle loops and 2-void cavities in concept space to steer generation out of repetitive loops.
+### 1. 📐 Persistent Homology & Cohomology Engine
+- **Vietoris-Rips Simplicial Complexes ($C_0, C_1, C_2, C_3$)**: Assembles full $k$-simplices up to 3-simplices (tetrahedra) and calculates boundary operator ranks $B_1, B_2, B_3$ over latent trajectory embeddings.
+- **Exact Betti Numbers ($b_0, b_1, b_2$)**: Correctly computes $b_2 = \operatorname{dim}(C_2) - \operatorname{rank}(B_2) - \operatorname{rank}(B_3)$ to eliminate false 2-void detection on dense clusters.
+- **Multi-Scale Filtration & Persistence Entropy**: Evaluates topological signatures across distance percentiles and extracts harmonic 1-cycle generators via SVD nullspace decomposition.
 - **Sheaf Obstruction & Novelty Scoring**: Measures local-to-global coboundary section obstructions to reward structural conceptual complexity.
 
-### 2. 📊 Multi-Scale Kernel Density Estimation (KDE) Novelty Engine
-Replaces traditional single-point max similarity with Gaussian Kernel Density Estimation over past vector space embeddings:
-$$D(v) = \frac{1}{K} \sum_{i=1}^K \exp\left(-\frac{\|v - e_i\|^2}{2 \sigma^2}\right) \cdot \gamma^{K - i}$$
+### 2. 📊 Multi-Scale Cosine KDE Novelty Engine
+Replaces Euclidean distance with unit-normalized Cosine Distance Kernel Density Estimation:
+$$D(v) = \frac{1}{\sum w_i} \sum_{i=1}^K \exp\left(-\frac{1 - \cos(v, e_i)}{\tau}\right) \cdot \gamma^{K - i}$$
 
-- **Local Density vs. Global Penalty**: Detects dense semantic clusters vs. sparse voids in high-dimensional space with bounded $O(1)$ temporal windowing for scaling.
-- **Lexical Entropy & Trope Penalty**: Combines vector density with n-gram surprise matrix scoring to calculate composite novelty.
-- **Temporal Memory Decay ($\gamma = 0.97$)**: Exponentially decays older embeddings so the explorer can re-visit previous domains from fresh angles.
+- **Calibrated High-Dimensional Bandwidth ($\tau = 0.20$)**: Prevents distance saturation in unit-hypersphere embedding spaces.
+- **Lexical Entropy & Content Word Ratio**: Combines vector density with n-gram surprise matrix scoring to calculate composite novelty.
+- **Dynamic Byte-Level Sampler Logit Repulsion**: Dynamic `RepulsionLogitsProcessor` intercepts `llama_cpp` sampler logits at the byte level to actively penalize clichés and buzzwords.
 
-### 3. 🎯 Subspace Vector Steering & Llama-3 Instruction Chat Formatting
-- **Llama 3 Chat Templates & Fallbacks**: Utilizes native `create_chat_completion` with system/user ChatML templates, backed by multi-level error recovery wrappers.
-- **PCA Subspace Orthogonal Push**: Calculates principal components of recent trajectory drift and projects search seeds onto the orthogonal subspace.
-- **Dynamic Sampler Logit Repulsion (`RepulsionLogitsProcessor`)**: Intercepts `llama_cpp` sampler logits to dynamically penalize overused cliché tokens.
-- **16 Cross-Disciplinary Persona Lenses**: Rotates through specialized lenses (e.g. *Sheaf Cohomology*, *Synthetic Epigenetics*, *Surrealist Cybernetics*).
+### 3. 🎯 Subspace Vector Steering & Domain Anchor Preservation
+- **Domain Anchor Grounding**: Preserves the primary starting concept in all prompt derivations to prevent unanchored semantic drift while exploring orthogonal frontiers.
+- **PCA Subspace Orthogonal Push & Momentum Steering**: Projects candidate seeds onto orthogonal subspaces and injects momentum towards discovered gold veins.
+- **Semantic Contrast Theme Synthesis**: Extracts high-dimensional orthogonal divergence themes and feeds them as explicit steering cues to the generative LLM.
+- **16 Balanced Multidisciplinary Persona Lenses**: Rotates across a wide spectrum of scientific and philosophical analytical frameworks.
 
 ### 4. 🌐 Topological Graph & Pareto Frontier Traversal
-- **Concept Graph Network**: Tracks semantic leaps, 2D PCA coordinates, novelty scores, and coherence values.
-- **Pareto Optimal Selection**: Identifies non-dominated nodes along the multi-objective Pareto Frontier (Novelty $\times$ Coherence).
-- **Smart Vector Warping**: Automatically backtracks to top Pareto nodes when hitting low-novelty plateaus.
+- **Continuous Multi-Objective Evaluation**: Scores both novelty and continuous semantic coherence on all exploration steps.
+- **Pareto Optimal Selection**: Identifies non-dominated nodes along the Pareto Frontier (Novelty $\times$ Coherence) to guide backtracking and exploration jumps.
+- **Global PCA Coordinate Alignment**: Re-projects historical embeddings dynamically for consistent 2D scatter visualization.
 
 ### 5. 🖥️ Interactive Live Expedition Web Dashboard
 - **Real-Time Telemetry**: Lightweight HTTP server hosting live state at `http://localhost:8000`.

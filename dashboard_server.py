@@ -2,9 +2,15 @@ import os
 import sys
 
 if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
+    except Exception:
+        pass
 if hasattr(sys.stderr, 'reconfigure'):
-    sys.stderr.reconfigure(encoding='utf-8')
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
+    except Exception:
+        pass
 
 import json
 import threading
@@ -14,7 +20,7 @@ from urllib.parse import parse_qs, urlparse
 # Global shared state between Indiana Jones explorer and web dashboard
 class ExpeditionState:
     def __init__(self):
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.status = "IDLE" # IDLE, EXPEDITION_RUNNING, PAUSED, COMPLETED
         self.current_step = 0
         self.total_steps = 100
@@ -85,6 +91,21 @@ class ExpeditionState:
             self.graph_nodes = nodes
             self.graph_edges = edges
             self.frontier_nodes = frontier
+            if nodes:
+                self.pca_coords = [
+                    {
+                        "x": float(n.get("pca_x", 0.0) or 0.0),
+                        "y": float(n.get("pca_y", 0.0) or 0.0),
+                        "z": float(n.get("pca_z", 0.0) or 0.0),
+                        "label": n.get("concept", ""),
+                        "is_gold": bool(n.get("is_gold", False)),
+                        "step": int(n.get("step", i + 1)),
+                        "novelty": float(n.get("novelty", 0.0) if n.get("novelty") is not None else 0.0),
+                        "coherence": float(n.get("coherence", 5.0) if n.get("coherence") is not None else 5.0),
+                        "cohomological_dim": float(n.get("cohomological_dim", 1.0) if n.get("cohomological_dim") is not None else 1.0)
+                    }
+                    for i, n in enumerate(nodes)
+                ]
 
     def reset_expedition(self):
         self.current_step = 0
@@ -145,6 +166,21 @@ class ExpeditionState:
 
     def to_dict(self):
         with self.lock:
+            coords = list(self.pca_coords)
+            if not coords and self.journal_history:
+                import math
+                coords = [{
+                    "x": math.cos(i * 0.48) * (0.8 + i * 0.06),
+                    "y": math.sin(i * 0.48) * (0.8 + i * 0.06),
+                    "z": math.sin(i * 0.8) * 0.5 + float(e.get("novelty_score", 0.75)) * 0.5,
+                    "step": e.get("step", i + 1),
+                    "label": e.get("location", f"Step {i+1}"),
+                    "is_gold": bool(e.get("is_gold", False)),
+                    "novelty": float(e.get("novelty_score", 0.75)),
+                    "coherence": float(e.get("coherence_score", 8.0)),
+                    "cohomological_dim": float(e.get("cohomological_dim", 1.0))
+                } for i, e in enumerate(self.journal_history)]
+
             return {
                 "status": self.status,
                 "is_paused": (self.status == "PAUSED"),
@@ -174,7 +210,7 @@ class ExpeditionState:
                 "frontier_nodes": self.frontier_nodes,
                 "graph_nodes": self.graph_nodes,
                 "graph_edges": self.graph_edges,
-                "pca_coords": self.pca_coords # Full PCA coordinates
+                "pca_coords": coords # Full PCA coordinates
             }
 
     def load_journal_data(self, data, filename="", mode="replace"):
@@ -220,6 +256,45 @@ class ExpeditionState:
                 if entry.get("is_gold"):
                     new_gold.append(entry)
 
+            # Build and sanitize PCA coordinates
+            raw_pca = data.get("pca_coords") or []
+            sanitized_pca = []
+            if raw_pca:
+                for i, p in enumerate(raw_pca):
+                    step_num = (start_step_offset + p.get("step", i + 1)) if mode == "merge" else p.get("step", i + 1)
+                    sanitized_pca.append({
+                        "x": float(p.get("x", 0.0) or 0.0),
+                        "y": float(p.get("y", 0.0) or 0.0),
+                        "z": float(p.get("z", 0.0) or 0.0),
+                        "step": step_num,
+                        "label": p.get("label") or p.get("location") or f"Step {step_num}",
+                        "is_gold": bool(p.get("is_gold", False)),
+                        "novelty": float(p.get("novelty", p.get("novelty_score", 0.75))),
+                        "coherence": float(p.get("coherence", p.get("coherence_score", 8.0))),
+                        "cohomological_dim": float(p.get("cohomological_dim", 1.0))
+                    })
+            else:
+                import math
+                for i, e in enumerate(new_history):
+                    step_num = e.get("step", start_step_offset + i + 1)
+                    nov = float(e.get("novelty_score", 0.75))
+                    coh = float(e.get("coherence_score", 8.0))
+                    cd = float(e.get("cohomological_dim", 1.0))
+                    is_g = bool(e.get("is_gold", False))
+                    angle = (start_step_offset + i) * 0.48
+                    radius = 0.8 + (start_step_offset + i) * 0.06
+                    sanitized_pca.append({
+                        "x": math.cos(angle) * radius,
+                        "y": math.sin(angle) * radius,
+                        "z": math.sin(i * 0.8) * 0.5 + nov * 0.5,
+                        "step": step_num,
+                        "label": e.get("location", f"Step {step_num}"),
+                        "is_gold": is_g,
+                        "novelty": nov,
+                        "coherence": coh,
+                        "cohomological_dim": cd
+                    })
+
             if mode == "replace":
                 self.journal_history = new_history
                 self.gold_vault = new_gold
@@ -235,6 +310,7 @@ class ExpeditionState:
                     "coherence_score": e.get("coherence_score", 8),
                     "cohomological_dim": e.get("cohomological_dim", 1.0)
                 } for e in new_history]
+                self.pca_coords = sanitized_pca
             else: # merge
                 self.journal_history.extend(new_history)
                 self.gold_vault.extend(new_gold)
@@ -247,6 +323,7 @@ class ExpeditionState:
                         "coherence_score": e.get("coherence_score", 8),
                         "cohomological_dim": e.get("cohomological_dim", 1.0)
                     })
+                self.pca_coords.extend(sanitized_pca)
 
             return len(new_history)
 
@@ -409,15 +486,29 @@ class DashboardHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
+class ReusableHTTPServer(HTTPServer):
+    allow_reuse_address = True
+
 def run_dashboard_server(port=8000):
-    server = HTTPServer(("0.0.0.0", port), DashboardHTTPRequestHandler)
-    print(f"🖥️  Expedition Web Dashboard live at: http://localhost:{port}")
-    server.serve_forever()
+    try:
+        try:
+            server = ReusableHTTPServer(("127.0.0.1", port), DashboardHTTPRequestHandler)
+        except Exception:
+            server = ReusableHTTPServer(("", port), DashboardHTTPRequestHandler)
+        print(f"🖥️  Expedition Web Dashboard live at: http://localhost:{port}", flush=True)
+        server.serve_forever()
+    except Exception as e:
+        print(f"⚠️  Dashboard server on port {port} encountered an error: {e}", flush=True)
+
+_SERVER_THREAD = None
 
 def start_server_in_thread(port=8000):
-    t = threading.Thread(target=run_dashboard_server, args=(port,), daemon=True)
-    t.start()
-    return t
+    global _SERVER_THREAD
+    if _SERVER_THREAD is not None and _SERVER_THREAD.is_alive():
+        return _SERVER_THREAD
+    _SERVER_THREAD = threading.Thread(target=run_dashboard_server, args=(port,), daemon=True)
+    _SERVER_THREAD.start()
+    return _SERVER_THREAD
 
 if __name__ == "__main__":
     run_dashboard_server(8000)
